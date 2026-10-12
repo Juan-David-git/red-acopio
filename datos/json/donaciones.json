@@ -28,5 +28,35 @@
     "fecha_ultimo_cambio": "2026-10-12 18:05",
     "fecha_entrega": null,
     "id": 2
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "arroz",
+    "cantidad": 10,
+    "descripcion": "bolsas de 1kg",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 18:09",
+    "fecha_ultimo_cambio": "2026-10-12 18:09",
+    "fecha_entrega": null,
+    "id": 3
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 4,
+    "categoria": "Aseo",
+    "articulo": "crema dental",
+    "cantidad": 6,
+    "descripcion": "tubos de 75ml",
+    "direccion_recogida": "Carrera 33 # 48-10, Bucaramanga",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 18:10",
+    "fecha_ultimo_cambio": "2026-10-12 18:10",
+    "fecha_entrega": null,
+    "id": 4
   }
 ]
