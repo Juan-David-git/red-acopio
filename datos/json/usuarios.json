@@ -1,1 +1,59 @@
-[]
+[
+  {
+    "nombre": "Carmen Rodríguez",
+    "correo": "carmen@correo.com",
+    "telefono": "3001234567",
+    "ciudad": "Bucaramanga",
+    "rol": "donante",
+    "clave_hash": "b7d55babeb43fbb35fc03219ee3ed1a3590af1f36f6283a1673a412cf05448b2",
+    "sal": "34d409a8b80e5cc2",
+    "id": 1
+  },
+  {
+    "nombre": "Laura Gómez",
+    "correo": "laura@correo.com",
+    "telefono": "3005556677",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "bd3916d4c4497f8640325fb2c1cd4a1a0f8c9d9f9de1eb83f4902e1548472615",
+    "sal": "85c5f992724ea8c5",
+    "rol": "conductor",
+    "tipo_vehiculo": "carro",
+    "zona": "Norte",
+    "franjas": [
+      "mañana",
+      "tarde"
+    ],
+    "disponible": true,
+    "id": 2
+  },
+  {
+    "nombre": "Roberto Castillo",
+    "correo": "roberto@correo.com",
+    "telefono": "3008887766",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "cc0b63e010cdde471c8bc1dd373b082d65daf683beceb95863eccf1ef3aca059",
+    "sal": "089916fdf998745e",
+    "rol": "gestor",
+    "id": 3
+  },
+  {
+    "nombre": "Juan David",
+    "correo": "juandavid@gmail.com",
+    "telefono": "3023473259",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "f3a610afc7fa717e23076bb46ae03e21362a406db0506ecc0897f5134d931e3e",
+    "sal": "2ee4972a675fd949",
+    "rol": "donante",
+    "id": 4
+  },
+  {
+    "nombre": "Pedro Perez",
+    "correo": "pedro@gmail.com",
+    "telefono": "3031234567",
+    "ciudad": "Floridablanca",
+    "clave_hash": "665732eea96f302b86a58657c653999463e45b743ca60299c3de64e6f1d029ce",
+    "sal": "ae01dedd2c07c219",
+    "rol": "donante",
+    "id": 5
+  }
+]

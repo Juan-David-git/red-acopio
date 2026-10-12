@@ -1,0 +1,256 @@
+/* Colores de Red Acopio */
+:root {
+  --verde: #1f7a4d;
+  --verde-oscuro: #145536;
+  --verde-claro: #e6f3ec;
+  --naranja: #e08a2e;
+  --texto: #1d2420;
+  --gris: #5f6b66;
+  --fondo: #f5f7f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--verde);
+}
+
+/* ---------- barra de arriba ---------- */
+.barra {
+  background: var(--verde);
+  color: white;
+  padding: 14px 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.barra a {
+  color: white;
+  text-decoration: none;
+}
+
+/* ---------- portada ---------- */
+.portada {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.portada h1 {
+  font-size: 2.4rem;
+  color: var(--verde);
+  margin: 0 0 12px;
+}
+
+.portada p {
+  font-size: 1.1rem;
+  color: var(--gris);
+  margin: 0 0 32px;
+}
+
+/* ---------- botones ---------- */
+.boton {
+  display: inline-block;
+  padding: 14px 28px;
+  margin: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  background: var(--verde);
+  color: white;
+}
+
+.boton:hover {
+  background: var(--verde-oscuro);
+}
+
+.boton.secundario {
+  background: white;
+  color: var(--verde);
+  border: 2px solid var(--verde);
+}
+
+.boton.ancho {
+  width: 100%;
+  margin: 20px 0 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- tarjetas de como funciona ---------- */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.paso {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.paso .icono {
+  font-size: 2rem;
+}
+
+.paso h3 {
+  margin: 8px 0 4px;
+  color: var(--verde-oscuro);
+}
+
+.paso p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ---------- paginas con formulario ---------- */
+.contenedor {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.contenedor h1 {
+  color: var(--verde);
+  margin-bottom: 4px;
+}
+
+.subtitulo {
+  color: var(--gris);
+  margin-top: 0;
+}
+
+.tarjeta {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin: 14px 0 4px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccd6d0;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--verde);
+  border-color: var(--verde);
+}
+
+.ayuda {
+  font-size: 0.85rem;
+  color: var(--gris);
+  margin: 4px 0 0;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  margin-top: 18px;
+}
+
+label.check input {
+  width: 20px;
+  height: 20px;
+}
+
+.centrado {
+  text-align: center;
+}
+
+/* ---------- mensajes de exito y error ---------- */
+.mensaje {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.mensaje.exito {
+  display: block;
+  background: var(--verde-claro);
+  color: var(--verde-oscuro);
+}
+
+.mensaje.error {
+  display: block;
+  background: #fbe9e7;
+  color: #b3261e;
+}
+
+.pestanas {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #d5ddd8;
+  margin-bottom: 16px;
+}
+
+.pestanas button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--gris);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.pestanas button.activa {
+  color: var(--verde);
+  font-weight: bold;
+  border-bottom-color: var(--verde);
+}
+
+/* para esconder secciones */
+.oculto {
+  display: none;
+}
+
+/* titulos dentro del formulario */
+.tarjeta h2 {
+  font-size: 1.1rem;
+  color: var(--verde-oscuro);
+  margin: 24px 0 0;
+}
+
+.tarjeta h2:first-child {
+  margin-top: 0;
+}
+
+/* dos campos uno al lado del otro */
+.fila {
+  display: flex;
+  gap: 8px;
+}
