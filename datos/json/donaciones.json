@@ -13,5 +13,20 @@
     "fecha_ultimo_cambio": "2026-10-12 17:55",
     "fecha_entrega": null,
     "id": 1
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 3,
+    "categoria": "Ropa",
+    "articulo": "camisas",
+    "cantidad": 8,
+    "descripcion": "camisa de adulto talla M",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "cancelada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 18:05",
+    "fecha_ultimo_cambio": "2026-10-12 18:05",
+    "fecha_entrega": null,
+    "id": 2
   }
 ]

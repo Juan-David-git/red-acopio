@@ -6,10 +6,11 @@ from http.cookies import SimpleCookie
 
 from datos import repositorio_json as repo
 from logica import seguridad
+from logica.errores import ErrorNegocio
 from logica.usuarios_servicio import (
-    registrar_donante, registrar_conductor, registrar_centro,
-    iniciar_sesion, ErrorNegocio
+    registrar_donante, registrar_conductor, registrar_centro, iniciar_sesion
 )
+from logica import donaciones_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -32,25 +33,42 @@ class Manejador(BaseHTTPRequestHandler):
     def do_GET(self):
         ruta = self.path.split("?")[0]
 
-        # quien esta conectado
-        if ruta == "/api/sesion":
-            usuario = self.usuario_actual()
-            if usuario is None:
-                self.responder_json(200, {"rol": None})
-            else:
-                self.responder_json(200, {
-                    "nombre": usuario["nombre"],
-                    "correo": usuario["correo"],
-                    "rol": usuario["rol"]
-                })
-            return
+        try:
+            # quien esta conectado
+            if ruta == "/api/sesion":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(200, {"rol": None})
+                else:
+                    self.responder_json(200, {
+                        "nombre": usuario["nombre"],
+                        "correo": usuario["correo"],
+                        "rol": usuario["rol"]
+                    })
 
-        # si no es de la API, es un archivo (html, css, js)
-        self.servir_archivo(ruta)
+            # lista de centros (cualquiera la puede ver)
+            elif ruta == "/api/centros":
+                self.responder_json(200, repo.centros.listar())
+
+            # las donaciones del donante conectado
+            elif ruta == "/api/mis-donaciones":
+                usuario = self.exigir_rol("donante")
+                if usuario:
+                    lista = donaciones_servicio.donaciones_del_donante(usuario["id"])
+                    self.responder_json(200, lista)
+
+            # si no es de la API, es un archivo (html, css, js)
+            else:
+                self.servir_archivo(ruta)
+
+        except ErrorNegocio as e:
+            self.responder_json(400, {"error": str(e)})
 
     # ---------- POST: el navegador envia datos ----------
     def do_POST(self):
         datos = self.leer_json()
+        # ej: "/api/donaciones/5/cancelar" -> ["", "api", "donaciones", "5", "cancelar"]
+        partes = self.path.split("/")
 
         try:
             if self.path == "/api/registro/donante":
@@ -74,6 +92,20 @@ class Manejador(BaseHTTPRequestHandler):
             elif self.path == "/api/logout":
                 seguridad.cerrar_sesion(self.token())
                 self.responder_json(200, {"mensaje": "Sesión cerrada."}, "sesion=; Path=/; Max-Age=0")
+
+            # publicar donacion (RF002)
+            elif self.path == "/api/donaciones":
+                usuario = self.exigir_rol("donante")
+                if usuario:
+                    donaciones_servicio.publicar(usuario["id"], datos)
+                    self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
+
+            # cancelar donacion (RF016): /api/donaciones/<id>/cancelar
+            elif len(partes) == 5 and partes[2] == "donaciones" and partes[4] == "cancelar":
+                usuario = self.exigir_rol("donante")
+                if usuario:
+                    donaciones_servicio.cancelar(usuario["id"], int(partes[3]))
+                    self.responder_json(200, {"mensaje": "La donación fue cancelada."})
 
             else:
                 self.responder_json(404, {"error": "Ruta no encontrada."})
@@ -138,6 +170,18 @@ class Manejador(BaseHTTPRequestHandler):
         if id_usuario is None:
             return None
         return repo.usuarios.buscar_por_id(id_usuario)
+
+    def exigir_rol(self, rol):
+        # devuelve el usuario si tiene sesion y el rol correcto
+        # si no, responde con error y devuelve None
+        usuario = self.usuario_actual()
+        if usuario is None:
+            self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+            return None
+        if usuario["rol"] != rol:
+            self.responder_json(403, {"error": "No tiene permiso para hacer esto."})
+            return None
+        return usuario
 
 
 servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)

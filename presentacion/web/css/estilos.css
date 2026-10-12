@@ -254,3 +254,76 @@ label.check input {
   display: flex;
   gap: 8px;
 }
+
+
+.barra-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.barra-usuario #nombre-usuario {
+  margin-left: auto;
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+.boton-salir {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- tarjeta de cada donacion ---------- */
+.donacion {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.donacion h3 {
+  margin: 0 0 6px;
+}
+
+.donacion p {
+  margin: 4px 0;
+  font-size: 0.92rem;
+  color: var(--gris);
+}
+
+/* ---------- etiqueta de estado (colores) ---------- */
+.estado {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.estado.publicada { background: #e8eefb; color: #2b4c9b; }
+.estado.en-camino { background: #fdf0e1; color: #9a5512; }
+.estado.recibida  { background: var(--verde-claro); color: var(--verde-oscuro); }
+.estado.cancelada { background: #eceeed; color: var(--gris); }
+
+/* ---------- boton rojo (cancelar) ---------- */
+.boton.peligro {
+  background: white;
+  color: #b3261e;
+  border: 1px solid #b3261e;
+  padding: 8px 16px;
+  margin: 10px 0 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.vacio {
+  text-align: center;
+  color: var(--gris);
+  padding: 24px;
+}
