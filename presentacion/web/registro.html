@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Acopio - Registro</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+  <header class="barra"><a href="/">Red Acopio</a></header>
+
+  <main class="contenedor">
+    <h1>Crear cuenta</h1>
+    <p class="subtitulo">Regístrese para empezar a donar.</p>
+
+    <form id="form-registro" class="tarjeta">
+
+      <label for="nombre">Nombre completo</label>
+      <input type="text" id="nombre" placeholder="Ej: Carmen Rodríguez">
+
+      <label for="telefono">Celular / WhatsApp</label>
+      <input type="tel" id="telefono" placeholder="3001234567" maxlength="10">
+
+      <label for="ciudad">Ciudad</label>
+      <select id="ciudad">
+        <option value="">Seleccione…</option>
+        <option>Bucaramanga</option>
+        <option>Floridablanca</option>
+        <option>Girón</option>
+        <option>Piedecuesta</option>
+      </select>
+
+      <label for="correo">Correo electrónico</label>
+      <input type="email" id="correo" placeholder="nombre@correo.com">
+
+      <label for="clave">Contraseña</label>
+      <input type="password" id="clave">
+      <p class="ayuda">Mínimo 8 caracteres.</p>
+
+      <label class="check">
+        <input type="checkbox" id="acepta_privacidad">
+        Acepto la política de privacidad
+      </label>
+
+      <button type="submit" class="boton ancho">Crear cuenta</button>
+    </form>
+
+    <p class="centrado">¿Ya tiene cuenta? <a href="/login.html">Inicie sesión</a></p>
+  </main>
+
+</body>
+</html>

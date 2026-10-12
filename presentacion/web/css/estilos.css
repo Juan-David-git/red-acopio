@@ -21,7 +21,11 @@ body {
   line-height: 1.5;
 }
 
-/* barra de arriba */
+a {
+  color: var(--verde);
+}
+
+/* ---------- barra de arriba ---------- */
 .barra {
   background: var(--verde);
   color: white;
@@ -30,7 +34,12 @@ body {
   font-size: 1.2rem;
 }
 
-/* portada */
+.barra a {
+  color: white;
+  text-decoration: none;
+}
+
+/* ---------- portada ---------- */
 .portada {
   max-width: 720px;
   margin: 0 auto;
@@ -50,7 +59,7 @@ body {
   margin: 0 0 32px;
 }
 
-/* botones */
+/* ---------- botones ---------- */
 .boton {
   display: inline-block;
   padding: 14px 28px;
@@ -73,7 +82,14 @@ body {
   border: 2px solid var(--verde);
 }
 
-/* las tres tarjetas de como funciona */
+.boton.ancho {
+  width: 100%;
+  margin: 20px 0 0;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- tarjetas de como funciona ---------- */
 .pasos {
   display: flex;
   flex-wrap: wrap;
@@ -102,4 +118,71 @@ body {
 .paso p {
   font-size: 0.9rem;
   margin: 0;
+}
+
+/* ---------- paginas con formulario ---------- */
+.contenedor {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.contenedor h1 {
+  color: var(--verde);
+  margin-bottom: 4px;
+}
+
+.subtitulo {
+  color: var(--gris);
+  margin-top: 0;
+}
+
+.tarjeta {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin: 14px 0 4px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ccd6d0;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--verde);
+  border-color: var(--verde);
+}
+
+.ayuda {
+  font-size: 0.85rem;
+  color: var(--gris);
+  margin: 4px 0 0;
+}
+
+label.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: normal;
+  margin-top: 18px;
+}
+
+label.check input {
+  width: 20px;
+  height: 20px;
+}
+
+.centrado {
+  text-align: center;
 }
