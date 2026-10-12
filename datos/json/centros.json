@@ -79,5 +79,26 @@
       ]
     },
     "id": 4
+  },
+  {
+    "id_gestor": 3,
+    "nombre": "Tienda La Esperanza",
+    "direccion": "Calle 52 # 18-40",
+    "barrio": "La Concordia",
+    "ciudad": "Bucaramanga",
+    "horario": "Lunes a sábado, 7 a. m. a 7 p. m.",
+    "latitud": 7.1135,
+    "longitud": -73.115,
+    "capacidad_maxima": 180,
+    "necesidades": {
+      "Ropa": [
+        "medias",
+        "camisas"
+      ],
+      "Alimentos": [
+        "arroz"
+      ]
+    },
+    "id": 5
   }
 ]

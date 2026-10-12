@@ -25,5 +25,15 @@
     ],
     "disponible": true,
     "id": 2
+  },
+  {
+    "nombre": "Roberto Castillo",
+    "correo": "roberto@correo.com",
+    "telefono": "3008887766",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "cc0b63e010cdde471c8bc1dd373b082d65daf683beceb95863eccf1ef3aca059",
+    "sal": "089916fdf998745e",
+    "rol": "gestor",
+    "id": 3
   }
 ]

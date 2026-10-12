@@ -3,6 +3,7 @@ from logica import seguridad
 
 VEHICULOS = ["moto", "carro", "camioneta"]
 FRANJAS = ["mañana", "tarde", "noche"]
+CATEGORIAS = ["Alimentos", "Ropa", "Aseo"]
 
 
 class ErrorNegocio(Exception):
@@ -63,3 +64,52 @@ def registrar_conductor(datos):
     usuario["franjas"] = franjas
     usuario["disponible"] = len(franjas) > 0
     return repo.usuarios.agregar(usuario)
+
+
+def registrar_centro(datos):
+    usuario = _datos_basicos(datos)
+
+    nombre_centro = datos.get("nombre_centro", "").strip()
+    direccion = datos.get("direccion", "").strip()
+    barrio = datos.get("barrio", "").strip()
+    horario = datos.get("horario", "").strip()
+    necesidades = datos.get("necesidades", {})
+
+    if nombre_centro == "" or direccion == "" or barrio == "" or horario == "":
+        raise ErrorNegocio("Complete todos los datos del centro.")
+
+    # numeros: si escriben letras, int() o float() dan error
+    try:
+        capacidad = int(datos.get("capacidad_maxima", 0))
+        latitud = float(datos.get("latitud", 0))
+        longitud = float(datos.get("longitud", 0))
+    except ValueError:
+        raise ErrorNegocio("La capacidad y la ubicación deben ser números.")
+
+    if capacidad <= 0:
+        raise ErrorNegocio("La capacidad máxima debe ser mayor que cero.")
+    if len(necesidades) == 0:
+        raise ErrorNegocio("Indique al menos una cosa que necesite el centro.")
+    for categoria in necesidades:
+        if categoria not in CATEGORIAS:
+            raise ErrorNegocio("Categoría no válida: " + categoria)
+
+    # 1. guardar al encargado
+    usuario["rol"] = "gestor"
+    usuario = repo.usuarios.agregar(usuario)
+
+    # 2. guardar el centro, unido al encargado por id_gestor
+    centro = {
+        "id_gestor": usuario["id"],
+        "nombre": nombre_centro,
+        "direccion": direccion,
+        "barrio": barrio,
+        "ciudad": usuario["ciudad"],
+        "horario": horario,
+        "latitud": latitud,
+        "longitud": longitud,
+        "capacidad_maxima": capacidad,
+        "necesidades": necesidades
+    }
+    repo.centros.agregar(centro)
+    return usuario
