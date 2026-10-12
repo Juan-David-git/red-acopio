@@ -1,6 +1,9 @@
 import os
+import json
 import webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+
+from logica.usuarios_servicio import registrar_donante, ErrorNegocio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -19,6 +22,7 @@ TIPOS = {
 
 class Manejador(BaseHTTPRequestHandler):
 
+    # ---------- GET: el navegador pide una pagina ----------
     def do_GET(self):
         ruta = self.path.split("?")[0]
         if ruta == "/":
@@ -44,6 +48,34 @@ class Manejador(BaseHTTPRequestHandler):
         self.send_header("Content-Type", tipo)
         self.end_headers()
         self.wfile.write(contenido)
+
+    # ---------- POST: el navegador envia datos ----------
+    def do_POST(self):
+        datos = self.leer_json()
+
+        if self.path == "/api/registro/donante":
+            try:
+                registrar_donante(datos)
+                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
+            except ErrorNegocio as e:
+                self.responder_json(400, {"error": str(e)})
+        else:
+            self.responder_json(404, {"error": "Ruta no encontrada."})
+
+    # ---------- ayudas ----------
+    def leer_json(self):
+        # lee el cuerpo de la peticion y lo convierte a diccionario
+        largo = int(self.headers.get("Content-Length", 0))
+        texto = self.rfile.read(largo).decode("utf-8")
+        return json.loads(texto)
+
+    def responder_json(self, codigo, datos):
+        # convierte el diccionario a JSON y lo envia
+        cuerpo = json.dumps(datos, ensure_ascii=False).encode("utf-8")
+        self.send_response(codigo)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(cuerpo)
 
 
 servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)

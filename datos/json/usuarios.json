@@ -35,5 +35,15 @@
     "sal": "089916fdf998745e",
     "rol": "gestor",
     "id": 3
+  },
+  {
+    "nombre": "Juan David",
+    "correo": "juandavid@gmail.com",
+    "telefono": "3023473259",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "f3a610afc7fa717e23076bb46ae03e21362a406db0506ecc0897f5134d931e3e",
+    "sal": "2ee4972a675fd949",
+    "rol": "donante",
+    "id": 4
   }
 ]

@@ -186,3 +186,23 @@ label.check input {
 .centrado {
   text-align: center;
 }
+
+/* ---------- mensajes de exito y error ---------- */
+.mensaje {
+  display: none;
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.mensaje.exito {
+  display: block;
+  background: var(--verde-claro);
+  color: var(--verde-oscuro);
+}
+
+.mensaje.error {
+  display: block;
+  background: #fbe9e7;
+  color: #b3261e;
+}
