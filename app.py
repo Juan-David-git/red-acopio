@@ -8,7 +8,8 @@ from datos import repositorio_json as repo
 from logica import seguridad
 from logica.errores import ErrorNegocio
 from logica.usuarios_servicio import (
-    registrar_donante, registrar_conductor, registrar_centro, iniciar_sesion
+    registrar_donante, registrar_conductor, registrar_centro,
+    iniciar_sesion, actualizar_disponibilidad
 )
 from logica import donaciones_servicio
 
@@ -40,22 +41,37 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario is None:
                     self.responder_json(200, {"rol": None})
                 else:
-                    self.responder_json(200, {
+                    respuesta = {
                         "nombre": usuario["nombre"],
                         "correo": usuario["correo"],
                         "rol": usuario["rol"]
-                    })
+                    }
+                    # al conductor tambien le mandamos sus horarios
+                    if usuario["rol"] == "conductor":
+                        respuesta["disponible"] = usuario.get("disponible", False)
+                        respuesta["franjas"] = usuario.get("franjas", [])
+                    self.responder_json(200, respuesta)
 
             # lista de centros (cualquiera la puede ver)
             elif ruta == "/api/centros":
                 self.responder_json(200, repo.centros.listar())
 
-            # las donaciones del donante conectado
+            # ----- donante -----
             elif ruta == "/api/mis-donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
-                    lista = donaciones_servicio.donaciones_del_donante(usuario["id"])
-                    self.responder_json(200, lista)
+                    self.responder_json(200, donaciones_servicio.donaciones_del_donante(usuario["id"]))
+
+            # ----- conductor -----
+            elif ruta == "/api/donaciones/disponibles":
+                usuario = self.exigir_rol("conductor")
+                if usuario:
+                    self.responder_json(200, donaciones_servicio.disponibles_para_recoger())
+
+            elif ruta == "/api/mis-entregas":
+                usuario = self.exigir_rol("conductor")
+                if usuario:
+                    self.responder_json(200, donaciones_servicio.entregas_del_conductor(usuario["id"]))
 
             # si no es de la API, es un archivo (html, css, js)
             else:
@@ -71,6 +87,7 @@ class Manejador(BaseHTTPRequestHandler):
         partes = self.path.split("/")
 
         try:
+            # ----- registro e inicio de sesion -----
             if self.path == "/api/registro/donante":
                 registrar_donante(datos)
                 self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
@@ -93,19 +110,45 @@ class Manejador(BaseHTTPRequestHandler):
                 seguridad.cerrar_sesion(self.token())
                 self.responder_json(200, {"mensaje": "Sesión cerrada."}, "sesion=; Path=/; Max-Age=0")
 
-            # publicar donacion (RF002)
+            # ----- donante -----
             elif self.path == "/api/donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
                     donaciones_servicio.publicar(usuario["id"], datos)
                     self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
 
-            # cancelar donacion (RF016): /api/donaciones/<id>/cancelar
-            elif len(partes) == 5 and partes[2] == "donaciones" and partes[4] == "cancelar":
-                usuario = self.exigir_rol("donante")
+            # ----- conductor: horarios (RF020) -----
+            elif self.path == "/api/disponibilidad":
+                usuario = self.exigir_rol("conductor")
                 if usuario:
-                    donaciones_servicio.cancelar(usuario["id"], int(partes[3]))
-                    self.responder_json(200, {"mensaje": "La donación fue cancelada."})
+                    actualizar_disponibilidad(usuario["id"], datos.get("disponible", False), datos.get("franjas", []))
+                    self.responder_json(200, {"mensaje": "Horarios guardados."})
+
+            # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
+            elif len(partes) == 5 and partes[2] == "donaciones":
+                id_donacion = int(partes[3])
+                accion = partes[4]
+
+                if accion == "cancelar":
+                    usuario = self.exigir_rol("donante")
+                    if usuario:
+                        donaciones_servicio.cancelar(usuario["id"], id_donacion)
+                        self.responder_json(200, {"mensaje": "La donación fue cancelada."})
+
+                elif accion == "aceptar":
+                    usuario = self.exigir_rol("conductor")
+                    if usuario:
+                        donaciones_servicio.aceptar_recogida(usuario["id"], id_donacion)
+                        self.responder_json(200, {"mensaje": "¡Recogida aceptada! Ya aparece en «Mis entregas»."})
+
+                elif accion == "completar":
+                    usuario = self.exigir_rol("conductor")
+                    if usuario:
+                        donaciones_servicio.marcar_entregada(usuario["id"], id_donacion)
+                        self.responder_json(200, {"mensaje": "Entrega registrada. ¡Gracias por ayudar!"})
+
+                else:
+                    self.responder_json(404, {"error": "Ruta no encontrada."})
 
             else:
                 self.responder_json(404, {"error": "Ruta no encontrada."})

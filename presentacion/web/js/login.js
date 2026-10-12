@@ -6,7 +6,7 @@ const mensaje = document.getElementById("mensaje");
 // a que pagina va cada rol
 const paneles = {
   donante: "/donante.html",
-  conductor: "/panel.html",
+  conductor: "/conductor.html",
   gestor: "/panel.html"
 };
 
