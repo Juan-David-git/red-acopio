@@ -1,9 +1,9 @@
 # Logica de donaciones
-# RF002 publicar, RF010 ver estado
+# RF002 publicar, RF010 ver estado, RF016 cancelar
 
 from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
-from logica.estados import ahora
+from logica.estados import ahora, estado_de
 
 
 def publicar(id_donante, datos):
@@ -59,3 +59,19 @@ def donaciones_del_donante(id_donante):
         d["centro_nombre"] = centro["nombre"] if centro else ""
 
     return lista
+
+
+def cancelar(id_donante, id_donacion):
+    donacion = repo.donaciones.buscar_por_id(id_donacion)
+    if donacion is None:
+        raise ErrorNegocio("La donación no existe.")
+
+    # solo el dueño puede cancelarla
+    if donacion["id_donante"] != id_donante:
+        raise ErrorNegocio("Solo puede cancelar sus propias donaciones.")
+
+    # el estado decide si se puede (patron State)
+    estado_de(donacion).cancelar(donacion)
+
+    repo.donaciones.actualizar(donacion)
+    return donacion

@@ -1,33 +1,25 @@
-from logica.donaciones_servicio import publicar, donaciones_del_donante
+from logica.donaciones_servicio import cancelar, donaciones_del_donante
 from logica.errores import ErrorNegocio
 
-# Carmen (id 1) dona ropa al Salon Comunal San Francisco (id 2)
+# 1. alguien que NO es Carmen intenta cancelar la donacion 1
 try:
-    d = publicar(1, {
-        "categoria": "Ropa",
-        "articulo": "medias",
-        "cantidad": "10",
-        "descripcion": "medias de niño talla 8",
-        "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
-        "id_centro": "2"
-    })
-    print("Publicada con id", d["id"])
+    cancelar(99, 1)
 except ErrorNegocio as e:
-    print("Error:", e)
+    print("Otro usuario:", e)
 
-# Carmen intenta donar arroz al Salon Comunal, que solo pide ropa
+# 2. Carmen (id 1) cancela su donacion 1
 try:
-    publicar(1, {
-        "categoria": "Alimentos",
-        "articulo": "arroz",
-        "cantidad": "5",
-        "direccion_recogida": "Calle 45 # 12-20",
-        "id_centro": "2"
-    })
+    cancelar(1, 1)
+    print("Carmen: donación cancelada")
 except ErrorNegocio as e:
-    print("Error:", e)
+    print("Carmen:", e)
 
-# ver las donaciones de Carmen
+# 3. Carmen intenta cancelarla otra vez
+try:
+    cancelar(1, 1)
+except ErrorNegocio as e:
+    print("Otra vez:", e)
+
 print("\nDonaciones de Carmen:")
 for d in donaciones_del_donante(1):
-    print("-", d["cantidad"], d["articulo"], "→", d["centro_nombre"], "| estado:", d["estado"])
+    print("-", d["cantidad"], d["articulo"], "| estado:", d["estado"])

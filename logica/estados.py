@@ -57,7 +57,10 @@ class Recibida(EstadoDonacion):
 
 class Cancelada(EstadoDonacion):
     nombre = "cancelada"
-    # estado final: no permite nada (usa lo de la clase padre)
+ # estado final: las demas acciones usan lo de la clase padre
+    def cancelar(self, donacion):
+        raise ErrorNegocio("Esta donación ya fue cancelada.")
+   
 
 
 # ---------- para saber en que estado esta una donacion ----------
