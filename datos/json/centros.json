@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "nombre": "Tienda Don Roberto",
+    "direccion": "Calle 10 # 22-15",
+    "barrio": "Villa Rosa",
+    "ciudad": "Bucaramanga",
+    "horario": "Lunes a sábado, 8 a. m. a 6 p. m.",
+    "latitud": 7.15,
+    "longitud": -73.12,
+    "capacidad_maxima": 200,
+    "necesidades": {
+      "Alimentos": [
+        "arroz",
+        "atún",
+        "aceite"
+      ],
+      "Aseo": [
+        "jabón",
+        "papel higiénico"
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "nombre": "Salón Comunal San Francisco",
+    "direccion": "Carrera 22 # 14-30",
+    "barrio": "San Francisco",
+    "ciudad": "Bucaramanga",
+    "horario": "Lunes a viernes, 2 p. m. a 7 p. m.",
+    "latitud": 7.123,
+    "longitud": -73.118,
+    "capacidad_maxima": 350,
+    "necesidades": {
+      "Ropa": [
+        "medias",
+        "camisas",
+        "ropa de niño",
+        "pantalones"
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "nombre": "Fundación Luz",
+    "direccion": "Calle 30 # 25-71",
+    "barrio": "Cañaveral",
+    "ciudad": "Floridablanca",
+    "horario": "Todos los días, 7 a. m. a 5 p. m.",
+    "latitud": 7.07,
+    "longitud": -73.098,
+    "capacidad_maxima": 500,
+    "necesidades": {
+      "Alimentos": [
+        "lentejas",
+        "pasta"
+      ],
+      "Ropa": [
+        "camisas"
+      ]
+    }
+  },
+  {
+    "nombre": "Parroquia San Juan Bautista",
+    "direccion": "Carrera 26 # 30-12",
+    "barrio": "Centro",
+    "ciudad": "Girón",
+    "horario": "Sábados, 8 a. m. a 12 m.",
+    "latitud": 7.07,
+    "longitud": -73.169,
+    "capacidad_maxima": 150,
+    "necesidades": {
+      "Aseo": [
+        "crema dental",
+        "toallas higiénicas"
+      ],
+      "Ropa": [
+        "medias"
+      ]
+    },
+    "id": 4
+  }
+]
