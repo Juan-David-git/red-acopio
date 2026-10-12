@@ -1,18 +1,33 @@
-from logica.estados import estado_de
+from logica.donaciones_servicio import publicar, donaciones_del_donante
 from logica.errores import ErrorNegocio
 
-# una donacion de prueba (no se guarda en ningun lado)
-donacion = {"estado": "publicada", "id_conductor": None}
+# Carmen (id 1) dona ropa al Salon Comunal San Francisco (id 2)
+try:
+    d = publicar(1, {
+        "categoria": "Ropa",
+        "articulo": "medias",
+        "cantidad": "10",
+        "descripcion": "medias de niño talla 8",
+        "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+        "id_centro": "2"
+    })
+    print("Publicada con id", d["id"])
+except ErrorNegocio as e:
+    print("Error:", e)
 
-def intentar(accion, funcion):
-    try:
-        funcion()
-        print("OK  ", accion, "-> ahora está:", donacion["estado"])
-    except ErrorNegocio as e:
-        print("NO  ", accion, "->", e)
+# Carmen intenta donar arroz al Salon Comunal, que solo pide ropa
+try:
+    publicar(1, {
+        "categoria": "Alimentos",
+        "articulo": "arroz",
+        "cantidad": "5",
+        "direccion_recogida": "Calle 45 # 12-20",
+        "id_centro": "2"
+    })
+except ErrorNegocio as e:
+    print("Error:", e)
 
-intentar("completar", lambda: estado_de(donacion).completar(donacion))
-intentar("aceptar",   lambda: estado_de(donacion).aceptar(donacion, 2))
-intentar("cancelar",  lambda: estado_de(donacion).cancelar(donacion))
-intentar("completar", lambda: estado_de(donacion).completar(donacion))
-intentar("aceptar",   lambda: estado_de(donacion).aceptar(donacion, 5))
+# ver las donaciones de Carmen
+print("\nDonaciones de Carmen:")
+for d in donaciones_del_donante(1):
+    print("-", d["cantidad"], d["articulo"], "→", d["centro_nombre"], "| estado:", d["estado"])

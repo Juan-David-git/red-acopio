@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id_donante": 1,
+    "id_centro": 2,
+    "categoria": "Ropa",
+    "articulo": "medias",
+    "cantidad": 10,
+    "descripcion": "medias de niño talla 8",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 17:53",
+    "fecha_ultimo_cambio": "2026-10-12 17:53",
+    "fecha_entrega": null,
+    "id": 1
+  }
+]
