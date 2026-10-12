@@ -1,14 +1,10 @@
 from datos import repositorio_json as repo
 from logica import seguridad
+from logica.errores import ErrorNegocio
 
 VEHICULOS = ["moto", "carro", "camioneta"]
 FRANJAS = ["mañana", "tarde", "noche"]
 CATEGORIAS = ["Alimentos", "Ropa", "Aseo"]
-
-
-class ErrorNegocio(Exception):
-    # error con un mensaje que se le puede mostrar al usuario
-    pass
 
 
 def _datos_basicos(datos):
