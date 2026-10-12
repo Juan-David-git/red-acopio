@@ -1,0 +1,105 @@
+/* Colores de Red Acopio */
+:root {
+  --verde: #1f7a4d;
+  --verde-oscuro: #145536;
+  --verde-claro: #e6f3ec;
+  --naranja: #e08a2e;
+  --texto: #1d2420;
+  --gris: #5f6b66;
+  --fondo: #f5f7f5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+/* barra de arriba */
+.barra {
+  background: var(--verde);
+  color: white;
+  padding: 14px 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* portada */
+.portada {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 20px;
+  text-align: center;
+}
+
+.portada h1 {
+  font-size: 2.4rem;
+  color: var(--verde);
+  margin: 0 0 12px;
+}
+
+.portada p {
+  font-size: 1.1rem;
+  color: var(--gris);
+  margin: 0 0 32px;
+}
+
+/* botones */
+.boton {
+  display: inline-block;
+  padding: 14px 28px;
+  margin: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  background: var(--verde);
+  color: white;
+}
+
+.boton:hover {
+  background: var(--verde-oscuro);
+}
+
+.boton.secundario {
+  background: white;
+  color: var(--verde);
+  border: 2px solid var(--verde);
+}
+
+/* las tres tarjetas de como funciona */
+.pasos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 48px;
+}
+
+.paso {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.paso .icono {
+  font-size: 2rem;
+}
+
+.paso h3 {
+  margin: 8px 0 4px;
+  color: var(--verde-oscuro);
+}
+
+.paso p {
+  font-size: 0.9rem;
+  margin: 0;
+}
