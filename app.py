@@ -1,15 +1,20 @@
-from logica.usuarios_servicio import iniciar_sesion, ErrorNegocio
+import webbrowser
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-pruebas = [
-    ("laura@correo.com", "laura1234"),
-    ("laura@correo.com", "otra-clave"),
-    ("nadie@correo.com", "laura1234"),
-    ("ROBERTO@correo.com", "roberto123"),
-]
 
-for correo, clave in pruebas:
-    try:
-        u = iniciar_sesion(correo, clave)
-        print("OK", correo, "-> entró como", u["rol"])
-    except ErrorNegocio as e:
-        print("X ", correo, "->", e)
+class Manejador(BaseHTTPRequestHandler):
+
+    def do_GET(self):
+        with open("presentacion/web/index.html", "rb") as archivo:
+            contenido = archivo.read()
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(contenido)
+
+
+servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
+print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+webbrowser.open("http://localhost:8000")
+servidor.serve_forever()
