@@ -1,15 +1,18 @@
-from logica.usuarios_servicio import registrar_donante, ErrorNegocio
+from logica.usuarios_servicio import registrar_conductor, ErrorNegocio
 
 datos = {
-    "nombre": "Carmen Rodríguez",
-    "correo": "carmen@correo.com",
-    "telefono": "3001234567",
+    "nombre": "Laura Gómez",
+    "correo": "laura2@correo.com",
+    "telefono": "3005556677",
     "ciudad": "Bucaramanga",
-    "clave": "carmen123"
+    "clave": "laura1234",
+    "tipo_vehiculo": "bicicleta",
+    "zona": "Norte",
+    "franjas": ["mañana", "tarde"]
 }
 
 try:
-    usuario = registrar_donante(datos)
-    print("Registrado con id", usuario["id"])
+    usuario = registrar_conductor(datos)
+    print("Conductor registrado con id", usuario["id"])
 except ErrorNegocio as e:
     print("Error:", e)
