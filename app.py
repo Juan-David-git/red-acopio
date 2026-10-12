@@ -6,7 +6,10 @@ from http.cookies import SimpleCookie
 
 from datos import repositorio_json as repo
 from logica import seguridad
-from logica.usuarios_servicio import registrar_donante, iniciar_sesion, ErrorNegocio
+from logica.usuarios_servicio import (
+    registrar_donante, registrar_conductor, registrar_centro,
+    iniciar_sesion, ErrorNegocio
+)
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -53,6 +56,14 @@ class Manejador(BaseHTTPRequestHandler):
             if self.path == "/api/registro/donante":
                 registrar_donante(datos)
                 self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
+
+            elif self.path == "/api/registro/conductor":
+                registrar_conductor(datos)
+                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
+
+            elif self.path == "/api/registro/centro":
+                registrar_centro(datos)
+                self.responder_json(201, {"mensaje": "¡Centro de acopio registrado! Ya puede iniciar sesión."})
 
             elif self.path == "/api/login":
                 usuario = iniciar_sesion(datos.get("correo", ""), datos.get("clave", ""))

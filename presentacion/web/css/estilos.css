@@ -206,3 +206,51 @@ label.check input {
   background: #fbe9e7;
   color: #b3261e;
 }
+
+.pestanas {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid #d5ddd8;
+  margin-bottom: 16px;
+}
+
+.pestanas button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--gris);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+}
+
+.pestanas button.activa {
+  color: var(--verde);
+  font-weight: bold;
+  border-bottom-color: var(--verde);
+}
+
+/* para esconder secciones */
+.oculto {
+  display: none;
+}
+
+/* titulos dentro del formulario */
+.tarjeta h2 {
+  font-size: 1.1rem;
+  color: var(--verde-oscuro);
+  margin: 24px 0 0;
+}
+
+.tarjeta h2:first-child {
+  margin-top: 0;
+}
+
+/* dos campos uno al lado del otro */
+.fila {
+  display: flex;
+  gap: 8px;
+}

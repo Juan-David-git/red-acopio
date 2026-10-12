@@ -12,11 +12,21 @@
 
   <main class="contenedor">
     <h1>Crear cuenta</h1>
-    <p class="subtitulo">Regístrese para empezar a donar.</p>
+    <p class="subtitulo">¿Cómo quiere participar?</p>
+
+    <!-- pestañas -->
+    <div class="pestanas">
+      <button type="button" class="activa" data-tipo="donante">Donante</button>
+      <button type="button" data-tipo="conductor">Conductor</button>
+      <button type="button" data-tipo="centro">Centro de acopio</button>
+    </div>
 
     <div id="mensaje" class="mensaje"></div>
 
     <form id="form-registro" class="tarjeta">
+
+      <!-- ===== datos que piden los tres ===== -->
+      <h2 id="titulo-datos">Sus datos</h2>
 
       <label for="nombre">Nombre completo</label>
       <input type="text" id="nombre" placeholder="Ej: Carmen Rodríguez">
@@ -40,7 +50,68 @@
       <input type="password" id="clave">
       <p class="ayuda">Mínimo 8 caracteres.</p>
 
-      <label class="check">
+      <!-- ===== solo conductor ===== -->
+      <div id="campos-conductor" class="oculto">
+        <h2>Su vehículo</h2>
+
+        <label for="tipo_vehiculo">Tipo de vehículo</label>
+        <select id="tipo_vehiculo">
+          <option value="">Seleccione…</option>
+          <option value="moto">Moto</option>
+          <option value="carro">Carro</option>
+          <option value="camioneta">Camioneta</option>
+        </select>
+
+        <label for="zona">Zona donde puede recoger</label>
+        <input type="text" id="zona" placeholder="Ej: Norte, Centro, Cabecera">
+
+        <label>¿En qué horarios puede recoger?</label>
+        <label class="check"><input type="checkbox" name="franja" value="mañana"> Mañana (6 a. m. a 12 m.)</label>
+        <label class="check"><input type="checkbox" name="franja" value="tarde"> Tarde (12 m. a 6 p. m.)</label>
+        <label class="check"><input type="checkbox" name="franja" value="noche"> Noche (6 p. m. a 9 p. m.)</label>
+      </div>
+
+      <!-- ===== solo centro de acopio ===== -->
+      <div id="campos-centro" class="oculto">
+        <h2>Datos del centro</h2>
+
+        <label for="nombre_centro">Nombre del centro</label>
+        <input type="text" id="nombre_centro" placeholder="Ej: Tienda Don Roberto">
+
+        <label for="direccion">Dirección</label>
+        <input type="text" id="direccion" placeholder="Calle 10 # 22-15">
+
+        <label for="barrio">Barrio</label>
+        <input type="text" id="barrio">
+
+        <label for="horario">Horario de atención</label>
+        <input type="text" id="horario" placeholder="Lunes a sábado, 8 a. m. a 6 p. m.">
+
+        <label for="capacidad_maxima">Capacidad máxima (número de artículos)</label>
+        <input type="number" id="capacidad_maxima" min="1">
+
+        <label>Ubicación en el mapa</label>
+        <div class="fila">
+          <input type="text" id="latitud" placeholder="Latitud: 7.1193">
+          <input type="text" id="longitud" placeholder="Longitud: -73.1227">
+        </div>
+        <p class="ayuda">En Google Maps haga clic derecho sobre el lugar y copie los dos números.</p>
+
+        <h2>¿Qué necesita el centro?</h2>
+        <p class="ayuda">Escriba las cosas separadas por comas. Deje vacío lo que no necesite.</p>
+
+        <label for="nec_alimentos">🍚 Alimentos</label>
+        <input type="text" id="nec_alimentos" placeholder="arroz, atún, aceite">
+
+        <label for="nec_ropa">👕 Ropa</label>
+        <input type="text" id="nec_ropa" placeholder="medias, camisas">
+
+        <label for="nec_aseo">🧼 Aseo</label>
+        <input type="text" id="nec_aseo" placeholder="jabón, papel higiénico">
+      </div>
+
+      <!-- ===== para todos ===== -->
+      <label class="check" style="margin-top: 24px">
         <input type="checkbox" id="acepta_privacidad">
         Acepto la política de privacidad
       </label>
