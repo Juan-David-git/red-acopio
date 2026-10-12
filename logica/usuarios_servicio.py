@@ -113,3 +113,17 @@ def registrar_centro(datos):
     }
     repo.centros.agregar(centro)
     return usuario
+
+
+def iniciar_sesion(correo, clave):
+    correo = correo.strip().lower()
+
+    encontrados = repo.usuarios.buscar_por("correo", correo)
+    if len(encontrados) == 0:
+        raise ErrorNegocio("Correo o contraseña incorrectos.")
+
+    usuario = encontrados[0]
+    if not seguridad.verificar_clave(clave, usuario["clave_hash"], usuario["sal"]):
+        raise ErrorNegocio("Correo o contraseña incorrectos.")
+
+    return usuario
