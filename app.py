@@ -1,9 +1,8 @@
-from datos.repositorio_json import RepositorioJSON
+from logica.seguridad import generar_hash, verificar_clave
 
-centros = RepositorioJSON("centros.json")
+hash1, sal1 = generar_hash("carmen123")
+print("Hash:", hash1)
+print("Sal:", sal1)
 
-centro = centros.buscar_por_id(2)
-centro["necesidades"]["Ropa"].append("pantalones")
-centros.actualizar(centro)
-
-print(centros.buscar_por_id(2)["necesidades"])
+print("¿carmen123 es correcta?", verificar_clave("carmen123", hash1, sal1))
+print("¿carmen999 es correcta?", verificar_clave("carmen999", hash1, sal1))
