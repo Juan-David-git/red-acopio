@@ -37,11 +37,11 @@
     "cantidad": 10,
     "descripcion": "bolsas de 1kg",
     "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
-    "estado": "publicada",
-    "id_conductor": null,
+    "estado": "recibida",
+    "id_conductor": 2,
     "fecha_publicacion": "2026-10-12 18:09",
-    "fecha_ultimo_cambio": "2026-10-12 18:09",
-    "fecha_entrega": null,
+    "fecha_ultimo_cambio": "2026-10-12 18:13",
+    "fecha_entrega": "2026-10-12 18:13",
     "id": 3
   },
   {

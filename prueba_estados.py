@@ -1,25 +1,26 @@
-from logica.donaciones_servicio import cancelar, donaciones_del_donante
+from logica import donaciones_servicio as ds
 from logica.errores import ErrorNegocio
 
-# 1. alguien que NO es Carmen intenta cancelar la donacion 1
-try:
-    cancelar(99, 1)
-except ErrorNegocio as e:
-    print("Otro usuario:", e)
+print("Donaciones esperando conductor:")
+disponibles = ds.disponibles_para_recoger()
+for d in disponibles:
+    print("-", d["id"], d["cantidad"], d["articulo"], "→", d["centro_nombre"])
 
-# 2. Carmen (id 1) cancela su donacion 1
-try:
-    cancelar(1, 1)
-    print("Carmen: donación cancelada")
-except ErrorNegocio as e:
-    print("Carmen:", e)
+# Laura (id 2) acepta la primera
+primera = disponibles[0]["id"]
+ds.aceptar_recogida(2, primera)
+print("\nLaura aceptó la donación", primera)
 
-# 3. Carmen intenta cancelarla otra vez
+# intenta aceptarla otra vez
 try:
-    cancelar(1, 1)
+    ds.aceptar_recogida(2, primera)
 except ErrorNegocio as e:
-    print("Otra vez:", e)
+    print("Aceptarla otra vez:", e)
 
-print("\nDonaciones de Carmen:")
-for d in donaciones_del_donante(1):
-    print("-", d["cantidad"], d["articulo"], "| estado:", d["estado"])
+# Laura la entrega
+ds.marcar_entregada(2, primera)
+print("Laura la entregó")
+
+entregas = ds.entregas_del_conductor(2)
+print("\nPendientes de Laura:", len(entregas["pendientes"]))
+print("Completadas de Laura:", len(entregas["completadas"]))

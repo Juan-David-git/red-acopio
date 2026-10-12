@@ -1,10 +1,13 @@
 # Logica de donaciones
-# RF002 publicar, RF010 ver estado, RF016 cancelar
+# Donante: RF002 publicar, RF010 ver estado, RF016 cancelar
+# Conductor: RF005 ver entregas (y aceptar recogida), RF006 marcar entregada
 
 from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
 
+
+# ======================= DONANTE =======================
 
 def publicar(id_donante, datos):
     categoria = datos.get("categoria", "")
@@ -52,19 +55,13 @@ def publicar(id_donante, datos):
 
 def donaciones_del_donante(id_donante):
     lista = repo.donaciones.buscar_por("id_donante", id_donante)
-
-    # a cada donacion le agregamos el nombre del centro para mostrarlo
     for d in lista:
-        centro = repo.centros.buscar_por_id(d["id_centro"])
-        d["centro_nombre"] = centro["nombre"] if centro else ""
-
+        _agregar_detalle(d)
     return lista
 
 
 def cancelar(id_donante, id_donacion):
-    donacion = repo.donaciones.buscar_por_id(id_donacion)
-    if donacion is None:
-        raise ErrorNegocio("La donación no existe.")
+    donacion = _buscar(id_donacion)
 
     # solo el dueño puede cancelarla
     if donacion["id_donante"] != id_donante:
@@ -75,3 +72,77 @@ def cancelar(id_donante, id_donacion):
 
     repo.donaciones.actualizar(donacion)
     return donacion
+
+
+# ======================= CONDUCTOR =======================
+
+def disponibles_para_recoger():
+    # donaciones publicadas que nadie ha aceptado
+    lista = repo.donaciones.buscar_por("estado", "publicada")
+    for d in lista:
+        _agregar_detalle(d)
+    return lista
+
+
+def aceptar_recogida(id_conductor, id_donacion):
+    conductor = repo.usuarios.buscar_por_id(id_conductor)
+
+    # RF020: si no esta disponible, no puede aceptar
+    if not conductor.get("disponible"):
+        raise ErrorNegocio("Usted está marcado como no disponible. Cambie sus horarios para aceptar recogidas.")
+
+    donacion = _buscar(id_donacion)
+
+    # el estado decide si se puede (patron State)
+    estado_de(donacion).aceptar(donacion, id_conductor)
+
+    repo.donaciones.actualizar(donacion)
+    return donacion
+
+
+def entregas_del_conductor(id_conductor):
+    lista = repo.donaciones.buscar_por("id_conductor", id_conductor)
+    pendientes = []
+    completadas = []
+    for d in lista:
+        _agregar_detalle(d)
+        if d["estado"] == "en camino":
+            pendientes.append(d)
+        elif d["estado"] == "recibida":
+            completadas.append(d)
+    return {"pendientes": pendientes, "completadas": completadas}
+
+
+def marcar_entregada(id_conductor, id_donacion):
+    donacion = _buscar(id_donacion)
+
+    # solo el conductor que la acepto puede marcarla
+    if donacion["id_conductor"] != id_conductor:
+        raise ErrorNegocio("Solo puede marcar como entregadas sus propias recogidas.")
+
+    # el estado decide si se puede (patron State)
+    estado_de(donacion).completar(donacion)
+
+    repo.donaciones.actualizar(donacion)
+    return donacion
+
+
+# ======================= AYUDAS =======================
+
+def _buscar(id_donacion):
+    donacion = repo.donaciones.buscar_por_id(id_donacion)
+    if donacion is None:
+        raise ErrorNegocio("La donación no existe.")
+    return donacion
+
+
+def _agregar_detalle(d):
+    # le pega a la donacion datos del centro y del donante para mostrarlos
+    centro = repo.centros.buscar_por_id(d["id_centro"])
+    donante = repo.usuarios.buscar_por_id(d["id_donante"])
+    if centro:
+        d["centro_nombre"] = centro["nombre"]
+        d["centro_direccion"] = centro["direccion"] + ", " + centro["barrio"] + ", " + centro["ciudad"]
+    if donante:
+        d["donante_nombre"] = donante["nombre"]
+        d["donante_telefono"] = donante["telefono"]
