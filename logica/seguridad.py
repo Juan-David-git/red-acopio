@@ -13,3 +13,25 @@ def generar_hash(clave, sal=None):
 def verificar_clave(clave, hash_guardado, sal):
     h, _ = generar_hash(clave, sal)
     return h == hash_guardado
+
+
+# ---------- sesiones ----------
+# diccionario en memoria: token -> id del usuario
+# (si se reinicia el servidor, todos tienen que volver a iniciar sesion)
+sesiones = {}
+
+
+def crear_sesion(id_usuario):
+    token = secrets.token_hex(16)
+    sesiones[token] = id_usuario
+    return token
+
+
+def usuario_de_sesion(token):
+    # devuelve el id del usuario, o None si el token no existe
+    return sesiones.get(token)
+
+
+def cerrar_sesion(token):
+    if token in sesiones:
+        del sesiones[token]

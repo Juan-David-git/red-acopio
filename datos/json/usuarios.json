@@ -45,5 +45,15 @@
     "sal": "2ee4972a675fd949",
     "rol": "donante",
     "id": 4
+  },
+  {
+    "nombre": "Pedro Perez",
+    "correo": "pedro@gmail.com",
+    "telefono": "3031234567",
+    "ciudad": "Floridablanca",
+    "clave_hash": "665732eea96f302b86a58657c653999463e45b743ca60299c3de64e6f1d029ce",
+    "sal": "ae01dedd2c07c219",
+    "rol": "donante",
+    "id": 5
   }
 ]
