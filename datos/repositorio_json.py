@@ -54,3 +54,7 @@ class RepositorioJSON:
                 self._guardar(lista)
                 return True
         return False
+    
+centros = RepositorioJSON("centros.json")
+usuarios = RepositorioJSON("usuarios.json")
+donaciones = RepositorioJSON("donaciones.json")

@@ -1,8 +1,15 @@
-from logica.seguridad import generar_hash, verificar_clave
+from logica.usuarios_servicio import registrar_donante, ErrorNegocio
 
-hash1, sal1 = generar_hash("carmen123")
-print("Hash:", hash1)
-print("Sal:", sal1)
+datos = {
+    "nombre": "Carmen Rodríguez",
+    "correo": "carmen@correo.com",
+    "telefono": "3001234567",
+    "ciudad": "Bucaramanga",
+    "clave": "carmen123"
+}
 
-print("¿carmen123 es correcta?", verificar_clave("carmen123", hash1, sal1))
-print("¿carmen999 es correcta?", verificar_clave("carmen999", hash1, sal1))
+try:
+    usuario = registrar_donante(datos)
+    print("Registrado con id", usuario["id"])
+except ErrorNegocio as e:
+    print("Error:", e)

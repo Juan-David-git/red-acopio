@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "nombre": "Carmen Rodríguez",
+    "correo": "carmen@correo.com",
+    "telefono": "3001234567",
+    "ciudad": "Bucaramanga",
+    "rol": "donante",
+    "clave_hash": "b7d55babeb43fbb35fc03219ee3ed1a3590af1f36f6283a1673a412cf05448b2",
+    "sal": "34d409a8b80e5cc2",
+    "id": 1
+  }
+]
