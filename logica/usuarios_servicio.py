@@ -123,3 +123,17 @@ def iniciar_sesion(correo, clave):
         raise ErrorNegocio("Correo o contraseña incorrectos.")
 
     return usuario
+
+def actualizar_disponibilidad(id_conductor, disponible, franjas):
+    for f in franjas:
+        if f not in FRANJAS:
+            raise ErrorNegocio("Horario no válido: " + f)
+
+    if disponible and len(franjas) == 0:
+        raise ErrorNegocio("Si está disponible, marque al menos un horario.")
+
+    conductor = repo.usuarios.buscar_por_id(id_conductor)
+    conductor["disponible"] = disponible
+    conductor["franjas"] = franjas
+    repo.usuarios.actualizar(conductor)
+    return conductor
