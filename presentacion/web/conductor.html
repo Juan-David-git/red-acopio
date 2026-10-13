@@ -7,23 +7,39 @@
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
   <header class="barra barra-usuario">
-    <a href="/">Red Acopio</a>
-    <span id="nombre-usuario"></span>
-    <button id="boton-salir" class="boton-salir">Salir</button>
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+    <div class="usuario">
+      <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
+      <span id="nombre-usuario"></span>
+    </div>
+    <button id="boton-salir" class="boton-salir" type="button">
+      <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
+      <span>Salir</span>
+    </button>
   </header>
 
   <main class="contenedor">
 
     <!-- pestañas -->
     <div class="pestanas">
-      <button type="button" class="activa" data-seccion="seccion-recoger">Por recoger</button>
-      <button type="button" data-seccion="seccion-entregas">Mis entregas</button>
-      <button type="button" data-seccion="seccion-horarios">Horarios</button>
+      <button type="button" class="activa" data-seccion="seccion-recoger">
+        <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Recoger
+      </button>
+      <button type="button" data-seccion="seccion-entregas">
+        <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg> Entregas
+      </button>
+      <button type="button" data-seccion="seccion-horarios">
+        <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg> Horarios
+      </button>
     </div>
 
-    <div id="mensaje" class="mensaje"></div>
+    <div id="mensaje" class="mensaje" role="alert"></div>
 
     <!-- ===== POR RECOGER: donaciones publicadas ===== -->
     <section id="seccion-recoger">
@@ -33,31 +49,49 @@
 
     <!-- ===== MIS ENTREGAS (RF005 y RF006) ===== -->
     <section id="seccion-entregas" class="oculto">
-      <h2>Pendientes por entregar</h2>
+      <h2 class="titulo-seccion">
+        <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg>
+        Pendientes por entregar
+      </h2>
       <div id="lista-pendientes"></div>
 
-      <h2>Entregas completadas</h2>
+      <h2 class="titulo-seccion">
+        <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>
+        Entregas completadas
+      </h2>
       <div id="lista-completadas"></div>
     </section>
 
     <!-- ===== HORARIOS (RF020) ===== -->
     <section id="seccion-horarios" class="oculto">
       <form id="form-horarios" class="tarjeta">
-        <h2>Mi disponibilidad</h2>
+        <div class="tarjeta-titulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg>
+          <div>
+            <h2>Mi disponibilidad</h2>
+            <p>Cuéntenos cuándo puede recoger donaciones.</p>
+          </div>
+        </div>
 
-        <label class="check">
+        <label class="check" style="margin-top: 20px">
           <input type="checkbox" id="disponible">
           <strong>Estoy disponible para recoger donaciones</strong>
         </label>
 
-        <label>¿En qué horarios puede recoger?</label>
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-calendario"></use></svg>
+          ¿En qué horarios puede recoger?
+        </label>
         <label class="check"><input type="checkbox" name="franja" value="mañana"> Mañana (6 a. m. a 12 m.)</label>
         <label class="check"><input type="checkbox" name="franja" value="tarde"> Tarde (12 m. a 6 p. m.)</label>
         <label class="check"><input type="checkbox" name="franja" value="noche"> Noche (6 p. m. a 9 p. m.)</label>
 
         <p class="ayuda">Si no está disponible, no podrá aceptar recogidas nuevas.</p>
 
-        <button type="submit" class="boton ancho">Guardar horarios</button>
+        <button type="submit" class="boton verde ancho" style="margin-top: 24px">
+          <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>
+          Guardar horarios
+        </button>
       </form>
     </section>
 

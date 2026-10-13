@@ -58,5 +58,20 @@
     "fecha_ultimo_cambio": "2026-10-12 18:21",
     "fecha_entrega": "2026-10-12 18:21",
     "id": 4
+  },
+  {
+    "id_donante": 6,
+    "id_centro": 3,
+    "categoria": "Alimentos",
+    "articulo": "arroz",
+    "cantidad": 5,
+    "descripcion": "1kg",
+    "direccion_recogida": "Calle 36 No. 27-79",
+    "estado": "recibida",
+    "id_conductor": 7,
+    "fecha_publicacion": "2026-10-12 21:05",
+    "fecha_ultimo_cambio": "2026-10-12 21:08",
+    "fecha_entrega": "2026-10-12 21:08",
+    "id": 5
   }
 ]

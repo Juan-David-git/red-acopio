@@ -39,9 +39,26 @@ botones.forEach(function (boton) {
   });
 });
 
-// ---------- al escoger categoria: mostrar solo los centros que la necesitan ----------
-document.getElementById("categoria").addEventListener("change", function () {
-  const categoria = this.value;
+// ---------- categoria: botones grandes (Alimentos, Ropa, Aseo) ----------
+const botonesCategoria = document.querySelectorAll(".categoria");
+
+botonesCategoria.forEach(function (boton) {
+  boton.addEventListener("click", function () {
+    elegirCategoria(boton.dataset.categoria);
+  });
+});
+
+function elegirCategoria(categoria) {
+  document.getElementById("categoria").value = categoria;
+
+  // marcar el boton escogido
+  botonesCategoria.forEach(function (b) {
+    const escogido = b.dataset.categoria === categoria;
+    b.classList.toggle("activa", escogido);
+    b.setAttribute("aria-checked", escogido ? "true" : "false");
+  });
+
+  // mostrar solo los centros que necesitan esa categoria
   const select = document.getElementById("id_centro");
   document.getElementById("necesita").textContent = "";
 
@@ -50,7 +67,7 @@ document.getElementById("categoria").addEventListener("change", function () {
     return;
   }
 
-  let opciones = '<option value="">Seleccione…</option>';
+  let opciones = '<option value="">Seleccione un centro de acopio…</option>';
   let cuantos = 0;
   centros.forEach(function (c) {
     if (c.necesidades[categoria]) {
@@ -63,7 +80,7 @@ document.getElementById("categoria").addEventListener("change", function () {
     opciones = '<option value="">Ningún centro necesita esto ahora</option>';
   }
   select.innerHTML = opciones;
-});
+}
 
 // ---------- al escoger centro: decir que necesita ----------
 document.getElementById("id_centro").addEventListener("change", function () {
@@ -102,8 +119,7 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
     formulario.reset();
-    document.getElementById("id_centro").innerHTML = '<option value="">Primero escoja la categoría…</option>';
-    document.getElementById("necesita").textContent = "";
+    elegirCategoria("");
   }
 });
 
@@ -125,19 +141,28 @@ async function cargarDonaciones() {
   let html = "";
   lista.forEach(function (d) {
     html += '<div class="donacion">';
+    html += iconoCategoria(d.categoria);
+    html += '<div class="donacion-cabeza">';
     html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
     html += etiquetaEstado(d.estado);
+    html += "</div>";
+
+    html += '<div class="donacion-cuerpo">';
     if (d.descripcion) {
-      html += "<p>" + limpiar(d.descripcion) + "</p>";
+      html += dato("nota", limpiar(d.descripcion));
     }
-    html += "<p>Va para: " + limpiar(d.centro_nombre) + "</p>";
-    html += "<p>Publicada: " + formatearFecha(d.fecha_publicacion) + "</p>";
+    html += dato("centro", "Va para: <strong>" + limpiar(d.centro_nombre) + "</strong>");
+    html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
     if (d.estado === "recibida") {
-      html += "<p>Entregada: " + formatearFecha(d.fecha_entrega) + "</p>";
+      html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
     }
+    html += "</div>";
+
     // solo se puede cancelar si esta publicada (RF016)
     if (d.estado === "publicada") {
-      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">Cancelar donación</button>';
+      html += '<div class="donacion-acciones">';
+      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">' + icono("basura") + "Cancelar donación</button>";
+      html += "</div>";
     }
     html += "</div>";
   });

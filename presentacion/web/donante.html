@@ -7,55 +7,106 @@
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
   <header class="barra barra-usuario">
-    <a href="/">Red Acopio</a>
-    <span id="nombre-usuario"></span>
-    <button id="boton-salir" class="boton-salir">Salir</button>
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+    <div class="usuario">
+      <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
+      <span id="nombre-usuario"></span>
+    </div>
+    <button id="boton-salir" class="boton-salir" type="button">
+      <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
+      <span>Salir</span>
+    </button>
   </header>
 
   <main class="contenedor">
 
     <!-- pestañas -->
     <div class="pestanas">
-      <button type="button" class="activa" data-seccion="seccion-donar">Donar</button>
-      <button type="button" data-seccion="seccion-mis">Mis donaciones</button>
+      <button type="button" class="activa" data-seccion="seccion-donar">
+        <svg class="ico" aria-hidden="true"><use href="#i-corazon"></use></svg> Donar
+      </button>
+      <button type="button" data-seccion="seccion-mis">
+        <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Mis donaciones
+      </button>
     </div>
 
-    <div id="mensaje" class="mensaje"></div>
+    <div id="mensaje" class="mensaje" role="alert"></div>
 
     <!-- ===== DONAR (RF002) ===== -->
     <section id="seccion-donar">
       <form id="form-donacion" class="tarjeta">
-        <h2>¿Qué quiere donar?</h2>
+        <div class="tarjeta-titulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg>
+          <div>
+            <h2>¿Qué quiere donar?</h2>
+            <p>Su aporte hace la diferencia en muchas familias.</p>
+          </div>
+        </div>
 
-        <label for="categoria">Categoría</label>
-        <select id="categoria">
-          <option value="">Seleccione…</option>
-          <option value="Alimentos">🍚 Alimentos</option>
-          <option value="Ropa">👕 Ropa</option>
-          <option value="Aseo">🧼 Aseo</option>
-        </select>
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-etiqueta"></use></svg>
+          Categoría
+        </label>
+        <!-- el valor escogido se guarda aqui (lo llena donante.js) -->
+        <input type="hidden" id="categoria" value="">
+        <div class="categorias" role="radiogroup" aria-label="Categoría">
+          <button type="button" class="categoria" data-categoria="Alimentos" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-alimentos"></use></svg> Alimentos
+          </button>
+          <button type="button" class="categoria" data-categoria="Ropa" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-ropa"></use></svg> Ropa
+          </button>
+          <button type="button" class="categoria" data-categoria="Aseo" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-aseo"></use></svg> Aseo
+          </button>
+        </div>
 
-        <label for="id_centro">Centro de acopio</label>
+        <label for="id_centro">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+          Centro de acopio
+        </label>
         <select id="id_centro">
           <option value="">Primero escoja la categoría…</option>
         </select>
         <p class="ayuda" id="necesita"></p>
 
-        <label for="articulo">Artículo</label>
-        <input type="text" id="articulo" placeholder="Ej: arroz, medias, jabón">
+        <label for="articulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-lista"></use></svg>
+          Artículo
+        </label>
+        <input type="text" id="articulo" placeholder="Ej: arroz, camiseta, jabón">
 
-        <label for="cantidad">Cantidad</label>
-        <input type="number" id="cantidad" min="1">
+        <label for="cantidad">
+          <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+          Cantidad
+        </label>
+        <input type="number" id="cantidad" min="1" placeholder="Ej: 5" inputmode="numeric">
 
-        <label for="descripcion">Descripción (opcional)</label>
+        <label for="descripcion">
+          <svg class="ico" aria-hidden="true"><use href="#i-nota"></use></svg>
+          Descripción <small>(opcional)</small>
+        </label>
         <input type="text" id="descripcion" placeholder="Ej: bolsas de 1 kg, talla 8">
 
-        <label for="direccion_recogida">Dirección donde se recoge</label>
-        <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga">
+        <label for="direccion_recogida">
+          <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+          Dirección donde se recoge
+        </label>
+        <div class="campo-icono">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+          <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
+        </div>
 
-        <button type="submit" class="boton ancho">Publicar donación</button>
+        <button type="submit" class="boton ancho" style="margin-top: 28px">
+          <svg class="ico" aria-hidden="true"><use href="#i-enviar"></use></svg>
+          Publicar donación
+        </button>
       </form>
     </section>
 

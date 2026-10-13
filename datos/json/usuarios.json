@@ -54,5 +54,31 @@
     "sal": "ae01dedd2c07c219",
     "rol": "donante",
     "id": 5
+  },
+  {
+    "nombre": "CLAUDIA JIMENA RIOS LOZANO",
+    "correo": "cayarys@hotmail.com",
+    "telefono": "+574328541",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "7aa1c08b36cdcc24f31c372dc7d60ff2c897ee8116e384ee77cdc4f62eb0d101",
+    "sal": "597a3c0b7e6b2ff4",
+    "rol": "donante",
+    "id": 6
+  },
+  {
+    "nombre": "EDWAR JIMENEZ",
+    "correo": "alejoji1909@gmail.com",
+    "telefono": "3102441769",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "c643048e4589a26e1dca9b61aed9d8e67486790d094c8ed0dec4d8d671e06dd0",
+    "sal": "341f5f901f536bd4",
+    "rol": "conductor",
+    "tipo_vehiculo": "camioneta",
+    "zona": "norte",
+    "franjas": [
+      "tarde"
+    ],
+    "disponible": true,
+    "id": 7
   }
 ]

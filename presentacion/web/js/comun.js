@@ -57,22 +57,36 @@ function ocultarMensaje() {
 }
 
 // ---------- formatos ----------
+// etiqueta de color con icono; se distingue por color Y por icono
 function etiquetaEstado(estado) {
-  const textos = {
-    "publicada": "Publicada",
-    "en camino": "En camino",
-    "recibida": "Recibida",
-    "cancelada": "Cancelada"
+  const info = {
+    "publicada": ["Publicada", "reloj"],
+    "en camino": ["En camino", "camion"],
+    "recibida": ["Recibida", "check"],
+    "cancelada": ["Cancelada", "equis"]
   };
-  return '<span class="estado ' + estado.replace(" ", "-") + '">' + textos[estado] + "</span>";
+  const e = info[estado] || [estado, "info"];
+  return '<span class="estado ' + estado.replace(" ", "-") + '">' + icono(e[1]) + e[0] + "</span>";
 }
 
-// "2026-10-12 17:30" -> "12/10/2026 17:30"  (formato colombiano, RNF015)
+// icono grande de la categoria para las tarjetas
+function iconoCategoria(categoria) {
+  const nombres = { "Alimentos": "alimentos", "Ropa": "ropa", "Aseo": "aseo" };
+  return '<div class="donacion-icono ' + limpiar(categoria) + '">' + icono(nombres[categoria] || "caja") + "</div>";
+}
+
+// una linea de dato con icono: dato("pin", "<strong>Recoger en:</strong> ...")
+function dato(nombreIcono, html) {
+  return '<p class="dato">' + icono(nombreIcono) + "<span>" + html + "</span></p>";
+}
+
+// "2026-10-12 17:30" -> "12 oct. 2026, 17:30"  (formato colombiano, RNF015)
 function formatearFecha(texto) {
   if (!texto) return "";
+  const meses = ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic."];
   const partes = texto.split(" ");
   const f = partes[0].split("-");
-  return f[2] + "/" + f[1] + "/" + f[0] + " " + partes[1];
+  return parseInt(f[2], 10) + " " + meses[parseInt(f[1], 10) - 1] + " " + f[0] + (partes[1] ? ", " + partes[1] : "");
 }
 
 // evita que alguien meta codigo HTML en los textos (seguridad)

@@ -40,14 +40,30 @@ botones.forEach(function (boton) {
 });
 
 // ---------- tarjeta de una donacion (se usa en varias listas) ----------
+// abre la tarjeta y su cuerpo; quien la usa agrega lo suyo y luego cierra con cerrarTarjeta()
 function tarjeta(d) {
   let html = '<div class="donacion">';
+  html += iconoCategoria(d.categoria);
+  html += '<div class="donacion-cabeza">';
   html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
+  html += etiquetaEstado(d.estado);
+  html += "</div>";
+  html += '<div class="donacion-cuerpo">';
   if (d.descripcion) {
-    html += "<p>" + limpiar(d.descripcion) + "</p>";
+    html += dato("nota", limpiar(d.descripcion));
   }
-  html += "<p>📍 <strong>Recoger en:</strong> " + limpiar(d.direccion_recogida) + "</p>";
-  html += "<p>🏪 <strong>Llevar a:</strong> " + limpiar(d.centro_nombre) + " — " + limpiar(d.centro_direccion) + "</p>";
+  html += dato("pin", "<strong>Recoger en:</strong> " + limpiar(d.direccion_recogida));
+  html += dato("centro", "<strong>Llevar a:</strong> " + limpiar(d.centro_nombre) + " — " + limpiar(d.centro_direccion));
+  return html;
+}
+
+// botones para contactar al donante (llamada y WhatsApp)
+function contactoDonante(d) {
+  const numero = String(d.donante_telefono || "").replace(/\D/g, "");
+  let html = dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  html += '</div><div class="donacion-acciones">';
+  html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+  html += '<a class="boton secundario" href="https://wa.me/57' + numero + '" target="_blank" rel="noopener">' + icono("chat") + "WhatsApp</a>";
   return html;
 }
 
@@ -66,9 +82,10 @@ async function cargarPorRecoger() {
   let html = "";
   lista.forEach(function (d) {
     html += tarjeta(d);
-    html += "<p>Publicada: " + formatearFecha(d.fecha_publicacion) + "</p>";
-    html += '<button class="boton" onclick="aceptar(' + d.id + ')">Aceptar recogida</button>';
-    html += "</div>";
+    html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
+    html += '</div><div class="donacion-acciones">';
+    html += '<button class="boton" onclick="aceptar(' + d.id + ')">' + icono("camion") + "Aceptar recogida</button>";
+    html += "</div></div>";
   });
   contenedor.innerHTML = html;
 }
@@ -98,10 +115,9 @@ async function cargarEntregas() {
     let html = "";
     datos.pendientes.forEach(function (d) {
       html += tarjeta(d);
-      html += "<p>📞 Donante: " + limpiar(d.donante_nombre) + " — " + limpiar(d.donante_telefono) + "</p>";
-      html += etiquetaEstado(d.estado);
-      html += '<br><button class="boton" onclick="completar(' + d.id + ')">Marcar como entregada</button>';
-      html += "</div>";
+      html += contactoDonante(d);
+      html += '<button class="boton verde" onclick="completar(' + d.id + ')">' + icono("check") + "Marcar como entregada</button>";
+      html += "</div></div>";
     });
     pendientes.innerHTML = html;
   }
@@ -114,9 +130,8 @@ async function cargarEntregas() {
     let html = "";
     datos.completadas.forEach(function (d) {
       html += tarjeta(d);
-      html += etiquetaEstado(d.estado);
-      html += "<p>Entregada: " + formatearFecha(d.fecha_entrega) + "</p>";
-      html += "</div>";
+      html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
+      html += "</div></div>";
     });
     completadas.innerHTML = html;
   }
