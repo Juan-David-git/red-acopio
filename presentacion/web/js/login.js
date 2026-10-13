@@ -3,6 +3,13 @@
 const formulario = document.getElementById("form-login");
 const mensaje = document.getElementById("mensaje");
 
+// a que pagina va cada rol
+const paneles = {
+  donante: "/donante.html",
+  conductor: "/conductor.html",
+  gestor: "/panel.html"
+};
+
 formulario.addEventListener("submit", async function (evento) {
   evento.preventDefault();
 
@@ -20,8 +27,7 @@ formulario.addEventListener("submit", async function (evento) {
   const resultado = await respuesta.json();
 
   if (respuesta.ok) {
-    // entro bien: lo mandamos a su panel
-    window.location.href = "/panel.html";
+    window.location.href = paneles[resultado.rol];
   } else {
     mensaje.textContent = resultado.error;
     mensaje.className = "mensaje error";

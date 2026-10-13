@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Acopio - Donante</title>
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+
+  <header class="barra barra-usuario">
+    <a href="/">Red Acopio</a>
+    <span id="nombre-usuario"></span>
+    <button id="boton-salir" class="boton-salir">Salir</button>
+  </header>
+
+  <main class="contenedor">
+
+    <!-- pestañas -->
+    <div class="pestanas">
+      <button type="button" class="activa" data-seccion="seccion-donar">Donar</button>
+      <button type="button" data-seccion="seccion-mis">Mis donaciones</button>
+    </div>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <!-- ===== DONAR (RF002) ===== -->
+    <section id="seccion-donar">
+      <form id="form-donacion" class="tarjeta">
+        <h2>¿Qué quiere donar?</h2>
+
+        <label for="categoria">Categoría</label>
+        <select id="categoria">
+          <option value="">Seleccione…</option>
+          <option value="Alimentos">🍚 Alimentos</option>
+          <option value="Ropa">👕 Ropa</option>
+          <option value="Aseo">🧼 Aseo</option>
+        </select>
+
+        <label for="id_centro">Centro de acopio</label>
+        <select id="id_centro">
+          <option value="">Primero escoja la categoría…</option>
+        </select>
+        <p class="ayuda" id="necesita"></p>
+
+        <label for="articulo">Artículo</label>
+        <input type="text" id="articulo" placeholder="Ej: arroz, medias, jabón">
+
+        <label for="cantidad">Cantidad</label>
+        <input type="number" id="cantidad" min="1">
+
+        <label for="descripcion">Descripción (opcional)</label>
+        <input type="text" id="descripcion" placeholder="Ej: bolsas de 1 kg, talla 8">
+
+        <label for="direccion_recogida">Dirección donde se recoge</label>
+        <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga">
+
+        <button type="submit" class="boton ancho">Publicar donación</button>
+      </form>
+    </section>
+
+    <!-- ===== MIS DONACIONES (RF010 y RF016) ===== -->
+    <section id="seccion-mis" class="oculto">
+      <div id="lista-donaciones"></div>
+    </section>
+
+  </main>
+
+  <script src="/js/donante.js"></script>
+</body>
+</html>

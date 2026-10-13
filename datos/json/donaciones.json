@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "id_donante": 1,
+    "id_centro": 2,
+    "categoria": "Ropa",
+    "articulo": "medias",
+    "cantidad": 10,
+    "descripcion": "medias de niño talla 8",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "cancelada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 17:53",
+    "fecha_ultimo_cambio": "2026-10-12 17:55",
+    "fecha_entrega": null,
+    "id": 1
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 3,
+    "categoria": "Ropa",
+    "articulo": "camisas",
+    "cantidad": 8,
+    "descripcion": "camisa de adulto talla M",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "cancelada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-10-12 18:05",
+    "fecha_ultimo_cambio": "2026-10-12 18:05",
+    "fecha_entrega": null,
+    "id": 2
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "arroz",
+    "cantidad": 10,
+    "descripcion": "bolsas de 1kg",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "estado": "recibida",
+    "id_conductor": 2,
+    "fecha_publicacion": "2026-10-12 18:09",
+    "fecha_ultimo_cambio": "2026-10-12 18:13",
+    "fecha_entrega": "2026-10-12 18:13",
+    "id": 3
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 4,
+    "categoria": "Aseo",
+    "articulo": "crema dental",
+    "cantidad": 6,
+    "descripcion": "tubos de 75ml",
+    "direccion_recogida": "Carrera 33 # 48-10, Bucaramanga",
+    "estado": "recibida",
+    "id_conductor": 2,
+    "fecha_publicacion": "2026-10-12 18:10",
+    "fecha_ultimo_cambio": "2026-10-12 18:21",
+    "fecha_entrega": "2026-10-12 18:21",
+    "id": 4
+  }
+]

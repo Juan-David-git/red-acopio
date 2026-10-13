@@ -1,14 +1,10 @@
 from datos import repositorio_json as repo
 from logica import seguridad
+from logica.errores import ErrorNegocio
 
 VEHICULOS = ["moto", "carro", "camioneta"]
 FRANJAS = ["mañana", "tarde", "noche"]
 CATEGORIAS = ["Alimentos", "Ropa", "Aseo"]
-
-
-class ErrorNegocio(Exception):
-    # error con un mensaje que se le puede mostrar al usuario
-    pass
 
 
 def _datos_basicos(datos):
@@ -127,3 +123,17 @@ def iniciar_sesion(correo, clave):
         raise ErrorNegocio("Correo o contraseña incorrectos.")
 
     return usuario
+
+def actualizar_disponibilidad(id_conductor, disponible, franjas):
+    for f in franjas:
+        if f not in FRANJAS:
+            raise ErrorNegocio("Horario no válido: " + f)
+
+    if disponible and len(franjas) == 0:
+        raise ErrorNegocio("Si está disponible, marque al menos un horario.")
+
+    conductor = repo.usuarios.buscar_por_id(id_conductor)
+    conductor["disponible"] = disponible
+    conductor["franjas"] = franjas
+    repo.usuarios.actualizar(conductor)
+    return conductor

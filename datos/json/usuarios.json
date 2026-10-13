@@ -20,10 +20,9 @@
     "tipo_vehiculo": "carro",
     "zona": "Norte",
     "franjas": [
-      "mañana",
       "tarde"
     ],
-    "disponible": true,
+    "disponible": false,
     "id": 2
   },
   {
