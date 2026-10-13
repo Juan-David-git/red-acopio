@@ -1,13 +1,14 @@
 // Panel del conductor: aceptar recogida, ver entregas (RF005),
 // marcar como entregada (RF006) y horarios (RF020)
+// (pedirApi, mostrarMensaje, limpiar, etc. estan en comun.js)
 
-const mensaje = document.getElementById("mensaje");
 let conductor = null;
 
 // ---------- al abrir la pagina ----------
 async function iniciar() {
-  const respuesta = await fetch("/api/sesion");
-  conductor = await respuesta.json();
+  const r = await pedirApi("/api/sesion");
+  if (!r.ok) return;
+  conductor = r.datos;
 
   // revisar que haya sesion y que sea conductor
   if (conductor.rol !== "conductor") {
@@ -30,7 +31,7 @@ botones.forEach(function (boton) {
     });
     boton.classList.add("activa");
     document.getElementById(boton.dataset.seccion).classList.remove("oculto");
-    mensaje.className = "mensaje";
+    ocultarMensaje();
 
     if (boton.dataset.seccion === "seccion-recoger") cargarPorRecoger();
     if (boton.dataset.seccion === "seccion-entregas") cargarEntregas();
@@ -39,22 +40,39 @@ botones.forEach(function (boton) {
 });
 
 // ---------- tarjeta de una donacion (se usa en varias listas) ----------
+// abre la tarjeta y su cuerpo; quien la usa agrega lo suyo y luego cierra con cerrarTarjeta()
 function tarjeta(d) {
   let html = '<div class="donacion">';
+  html += iconoCategoria(d.categoria);
+  html += '<div class="donacion-cabeza">';
   html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
+  html += etiquetaEstado(d.estado);
+  html += "</div>";
+  html += '<div class="donacion-cuerpo">';
   if (d.descripcion) {
-    html += "<p>" + limpiar(d.descripcion) + "</p>";
+    html += dato("nota", limpiar(d.descripcion));
   }
-  html += "<p>📍 <strong>Recoger en:</strong> " + limpiar(d.direccion_recogida) + "</p>";
-  html += "<p>🏪 <strong>Llevar a:</strong> " + limpiar(d.centro_nombre) + " — " + limpiar(d.centro_direccion) + "</p>";
+  html += dato("pin", "<strong>Recoger en:</strong> " + limpiar(d.direccion_recogida));
+  html += dato("centro", "<strong>Llevar a:</strong> " + limpiar(d.centro_nombre) + " — " + limpiar(d.centro_direccion));
+  return html;
+}
+
+// botones para contactar al donante (llamada y WhatsApp)
+function contactoDonante(d) {
+  const numero = String(d.donante_telefono || "").replace(/\D/g, "");
+  let html = dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  html += '</div><div class="donacion-acciones">';
+  html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+  html += '<a class="boton secundario" href="https://wa.me/57' + numero + '" target="_blank" rel="noopener">' + icono("chat") + "WhatsApp</a>";
   return html;
 }
 
 // ---------- POR RECOGER ----------
 async function cargarPorRecoger() {
   const contenedor = document.getElementById("lista-recoger");
-  const respuesta = await fetch("/api/donaciones/disponibles");
-  const lista = await respuesta.json();
+  const r = await pedirApi("/api/donaciones/disponibles");
+  if (!r.ok) return;
+  const lista = r.datos;
 
   if (lista.length === 0) {
     contenedor.innerHTML = '<p class="vacio">No hay donaciones esperando conductor en este momento. 🙌</p>';
@@ -64,9 +82,10 @@ async function cargarPorRecoger() {
   let html = "";
   lista.forEach(function (d) {
     html += tarjeta(d);
-    html += "<p>Publicada: " + formatearFecha(d.fecha_publicacion) + "</p>";
-    html += '<button class="boton" onclick="aceptar(' + d.id + ')">Aceptar recogida</button>';
-    html += "</div>";
+    html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
+    html += '</div><div class="donacion-acciones">';
+    html += '<button class="boton" onclick="aceptar(' + d.id + ')">' + icono("camion") + "Aceptar recogida</button>";
+    html += "</div></div>";
   });
   contenedor.innerHTML = html;
 }
@@ -75,21 +94,18 @@ async function aceptar(id) {
   if (!confirm("¿Se compromete a recoger esta donación y llevarla al centro de acopio?")) {
     return;
   }
-  const respuesta = await fetch("/api/donaciones/" + id + "/aceptar", { method: "POST" });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones/" + id + "/aceptar");
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
   cargarPorRecoger();
 }
 
 // ---------- MIS ENTREGAS ----------
 async function cargarEntregas() {
-  const respuesta = await fetch("/api/mis-entregas");
-  const datos = await respuesta.json();
+  const r = await pedirApi("/api/mis-entregas");
+  if (!r.ok) return;
+  const datos = r.datos;
 
   // pendientes: con boton para marcar entregada
   const pendientes = document.getElementById("lista-pendientes");
@@ -99,10 +115,9 @@ async function cargarEntregas() {
     let html = "";
     datos.pendientes.forEach(function (d) {
       html += tarjeta(d);
-      html += "<p>📞 Donante: " + limpiar(d.donante_nombre) + " — " + limpiar(d.donante_telefono) + "</p>";
-      html += etiquetaEstado(d.estado);
-      html += '<br><button class="boton" onclick="completar(' + d.id + ')">Marcar como entregada</button>';
-      html += "</div>";
+      html += contactoDonante(d);
+      html += '<button class="boton verde" onclick="completar(' + d.id + ')">' + icono("check") + "Marcar como entregada</button>";
+      html += "</div></div>";
     });
     pendientes.innerHTML = html;
   }
@@ -115,9 +130,8 @@ async function cargarEntregas() {
     let html = "";
     datos.completadas.forEach(function (d) {
       html += tarjeta(d);
-      html += etiquetaEstado(d.estado);
-      html += "<p>Entregada: " + formatearFecha(d.fecha_entrega) + "</p>";
-      html += "</div>";
+      html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
+      html += "</div></div>";
     });
     completadas.innerHTML = html;
   }
@@ -127,13 +141,9 @@ async function completar(id) {
   if (!confirm("¿Confirma que ya entregó esta donación en el centro de acopio?")) {
     return;
   }
-  const respuesta = await fetch("/api/donaciones/" + id + "/completar", { method: "POST" });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones/" + id + "/completar");
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
   cargarEntregas();
 }
@@ -156,56 +166,13 @@ document.getElementById("form-horarios").addEventListener("submit", async functi
     franjas.push(c.value);
   });
 
-  const respuesta = await fetch("/api/disponibilidad", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ disponible: disponible, franjas: franjas })
-  });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
+  const r = await enviarJson("/api/disponibilidad", { disponible: disponible, franjas: franjas });
+  if (r.ok) {
     conductor.disponible = disponible;
     conductor.franjas = franjas;
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
 });
 
-// ---------- salir ----------
-document.getElementById("boton-salir").addEventListener("click", async function () {
-  await fetch("/api/logout", { method: "POST" });
-  window.location.href = "/";
-});
-
-// ---------- ayudas ----------
-function mostrarMensaje(texto, tipo) {
-  mensaje.textContent = texto;
-  mensaje.className = "mensaje " + tipo;
-  window.scrollTo(0, 0);
-}
-
-function etiquetaEstado(estado) {
-  const textos = {
-    "publicada": "Publicada",
-    "en camino": "En camino",
-    "recibida": "Recibida",
-    "cancelada": "Cancelada"
-  };
-  return '<span class="estado ' + estado.replace(" ", "-") + '">' + textos[estado] + "</span>";
-}
-
-function formatearFecha(texto) {
-  if (!texto) return "";
-  const partes = texto.split(" ");
-  const f = partes[0].split("-");
-  return f[2] + "/" + f[1] + "/" + f[0] + " " + partes[1];
-}
-
-function limpiar(texto) {
-  const div = document.createElement("div");
-  div.textContent = texto;
-  return div.innerHTML;
-}
-
+activarBotonSalir();
 iniciar();

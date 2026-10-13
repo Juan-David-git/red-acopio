@@ -1,13 +1,14 @@
 // Panel del donante: publicar (RF002), ver estado (RF010) y cancelar (RF016)
+// (pedirApi, mostrarMensaje, limpiar, etc. estan en comun.js)
 
-const mensaje = document.getElementById("mensaje");
 let centros = [];
 
 // ---------- al abrir la pagina ----------
 async function iniciar() {
   // revisar que haya sesion y que sea donante
-  const respuesta = await fetch("/api/sesion");
-  const usuario = await respuesta.json();
+  const r = await pedirApi("/api/sesion");
+  if (!r.ok) return;
+  const usuario = r.datos;
   if (usuario.rol !== "donante") {
     window.location.href = "/login.html";
     return;
@@ -15,8 +16,8 @@ async function iniciar() {
   document.getElementById("nombre-usuario").textContent = usuario.nombre;
 
   // traer los centros para el formulario
-  const r = await fetch("/api/centros");
-  centros = await r.json();
+  const rc = await pedirApi("/api/centros");
+  if (rc.ok) centros = rc.datos;
 }
 
 // ---------- pestañas ----------
@@ -30,7 +31,7 @@ botones.forEach(function (boton) {
     });
     boton.classList.add("activa");
     document.getElementById(boton.dataset.seccion).classList.remove("oculto");
-    mensaje.className = "mensaje";
+    ocultarMensaje();
 
     if (boton.dataset.seccion === "seccion-mis") {
       cargarDonaciones();
@@ -38,9 +39,26 @@ botones.forEach(function (boton) {
   });
 });
 
-// ---------- al escoger categoria: mostrar solo los centros que la necesitan ----------
-document.getElementById("categoria").addEventListener("change", function () {
-  const categoria = this.value;
+// ---------- categoria: botones grandes (Alimentos, Ropa, Aseo) ----------
+const botonesCategoria = document.querySelectorAll(".categoria");
+
+botonesCategoria.forEach(function (boton) {
+  boton.addEventListener("click", function () {
+    elegirCategoria(boton.dataset.categoria);
+  });
+});
+
+function elegirCategoria(categoria) {
+  document.getElementById("categoria").value = categoria;
+
+  // marcar el boton escogido
+  botonesCategoria.forEach(function (b) {
+    const escogido = b.dataset.categoria === categoria;
+    b.classList.toggle("activa", escogido);
+    b.setAttribute("aria-checked", escogido ? "true" : "false");
+  });
+
+  // mostrar solo los centros que necesitan esa categoria
   const select = document.getElementById("id_centro");
   document.getElementById("necesita").textContent = "";
 
@@ -49,7 +67,7 @@ document.getElementById("categoria").addEventListener("change", function () {
     return;
   }
 
-  let opciones = '<option value="">Seleccione…</option>';
+  let opciones = '<option value="">Seleccione un centro de acopio…</option>';
   let cuantos = 0;
   centros.forEach(function (c) {
     if (c.necesidades[categoria]) {
@@ -62,15 +80,16 @@ document.getElementById("categoria").addEventListener("change", function () {
     opciones = '<option value="">Ningún centro necesita esto ahora</option>';
   }
   select.innerHTML = opciones;
-});
+}
 
 // ---------- al escoger centro: decir que necesita ----------
 document.getElementById("id_centro").addEventListener("change", function () {
   const categoria = document.getElementById("categoria").value;
-  const centro = centros.find(function (c) { return c.id == this.value; }, this);
+  const idEscogido = this.value;
+  const centro = centros.find(function (c) { return String(c.id) === idEscogido; });
   const texto = document.getElementById("necesita");
 
-  if (centro) {
+  if (centro && centro.necesidades[categoria]) {
     texto.textContent = "Este centro necesita: " + centro.necesidades[categoria].join(", ");
   } else {
     texto.textContent = "";
@@ -80,6 +99,7 @@ document.getElementById("id_centro").addEventListener("change", function () {
 // ---------- publicar ----------
 document.getElementById("form-donacion").addEventListener("submit", async function (evento) {
   evento.preventDefault();
+  const formulario = this;
 
   const datos = {
     categoria: document.getElementById("categoria").value,
@@ -95,27 +115,20 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
     return;
   }
 
-  const respuesta = await fetch("/api/donaciones", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos)
-  });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-    this.reset();
-    document.getElementById("necesita").textContent = "";
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones", datos);
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
+    formulario.reset();
+    elegirCategoria("");
   }
 });
 
 // ---------- mis donaciones ----------
 async function cargarDonaciones() {
   const contenedor = document.getElementById("lista-donaciones");
-  const respuesta = await fetch("/api/mis-donaciones");
-  const lista = await respuesta.json();
+  const r = await pedirApi("/api/mis-donaciones");
+  if (!r.ok) return;
+  const lista = r.datos;
 
   if (lista.length === 0) {
     contenedor.innerHTML = '<p class="vacio">Todavía no ha publicado donaciones.</p>';
@@ -128,19 +141,28 @@ async function cargarDonaciones() {
   let html = "";
   lista.forEach(function (d) {
     html += '<div class="donacion">';
+    html += iconoCategoria(d.categoria);
+    html += '<div class="donacion-cabeza">';
     html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
     html += etiquetaEstado(d.estado);
+    html += "</div>";
+
+    html += '<div class="donacion-cuerpo">';
     if (d.descripcion) {
-      html += "<p>" + limpiar(d.descripcion) + "</p>";
+      html += dato("nota", limpiar(d.descripcion));
     }
-    html += "<p>Va para: " + limpiar(d.centro_nombre) + "</p>";
-    html += "<p>Publicada: " + formatearFecha(d.fecha_publicacion) + "</p>";
+    html += dato("centro", "Va para: <strong>" + limpiar(d.centro_nombre) + "</strong>");
+    html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
     if (d.estado === "recibida") {
-      html += "<p>Entregada: " + formatearFecha(d.fecha_entrega) + "</p>";
+      html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
     }
+    html += "</div>";
+
     // solo se puede cancelar si esta publicada (RF016)
     if (d.estado === "publicada") {
-      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">Cancelar donación</button>';
+      html += '<div class="donacion-acciones">';
+      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">' + icono("basura") + "Cancelar donación</button>";
+      html += "</div>";
     }
     html += "</div>";
   });
@@ -152,54 +174,12 @@ async function cancelar(id) {
   if (!confirm("¿Seguro que quiere cancelar esta donación? No se puede deshacer.")) {
     return;
   }
-
-  const respuesta = await fetch("/api/donaciones/" + id + "/cancelar", { method: "POST" });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones/" + id + "/cancelar");
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
   cargarDonaciones();
 }
 
-// ---------- salir ----------
-document.getElementById("boton-salir").addEventListener("click", async function () {
-  await fetch("/api/logout", { method: "POST" });
-  window.location.href = "/";
-});
-
-// ---------- ayudas ----------
-function mostrarMensaje(texto, tipo) {
-  mensaje.textContent = texto;
-  mensaje.className = "mensaje " + tipo;
-  window.scrollTo(0, 0);
-}
-
-function etiquetaEstado(estado) {
-  const textos = {
-    "publicada": "Publicada",
-    "en camino": "En camino",
-    "recibida": "Recibida",
-    "cancelada": "Cancelada"
-  };
-  return '<span class="estado ' + estado.replace(" ", "-") + '">' + textos[estado] + "</span>";
-}
-
-// "2026-10-12 17:30" -> "12/10/2026 17:30"  (formato colombiano, RNF015)
-function formatearFecha(texto) {
-  if (!texto) return "";
-  const partes = texto.split(" ");
-  const f = partes[0].split("-");
-  return f[2] + "/" + f[1] + "/" + f[0] + " " + partes[1];
-}
-
-// evita que alguien meta codigo HTML en los textos (seguridad)
-function limpiar(texto) {
-  const div = document.createElement("div");
-  div.textContent = texto;
-  return div.innerHTML;
-}
-
+activarBotonSalir();
 iniciar();

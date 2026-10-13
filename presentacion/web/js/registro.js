@@ -69,7 +69,8 @@ formulario.addEventListener("submit", async function (evento) {
     telefono: valor("telefono"),
     ciudad: valor("ciudad"),
     correo: valor("correo"),
-    clave: document.getElementById("clave").value
+    clave: document.getElementById("clave").value,
+    acepta_privacidad: document.getElementById("acepta_privacidad").checked
   };
 
   // datos extra del conductor

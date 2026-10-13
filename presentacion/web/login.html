@@ -7,23 +7,38 @@
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
-  <header class="barra"><a href="/">Red Acopio</a></header>
+  <header class="barra">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+  </header>
 
   <main class="contenedor">
     <h1>Iniciar sesión</h1>
     <p class="subtitulo">Entre con su correo y contraseña.</p>
 
-    <div id="mensaje" class="mensaje"></div>
+    <div id="mensaje" class="mensaje" role="alert"></div>
 
     <form id="form-login" class="tarjeta">
-      <label for="correo">Correo electrónico</label>
-      <input type="email" id="correo" placeholder="nombre@correo.com">
+      <label for="correo">
+        <svg class="ico" aria-hidden="true"><use href="#i-correo"></use></svg>
+        Correo electrónico
+      </label>
+      <input type="email" id="correo" placeholder="nombre@correo.com" autocomplete="email">
 
-      <label for="clave">Contraseña</label>
-      <input type="password" id="clave">
+      <label for="clave">
+        <svg class="ico" aria-hidden="true"><use href="#i-candado"></use></svg>
+        Contraseña
+      </label>
+      <input type="password" id="clave" autocomplete="current-password">
 
-      <button type="submit" class="boton ancho">Entrar</button>
+      <button type="submit" class="boton ancho" style="margin-top: 28px">
+        Entrar
+        <svg class="ico" aria-hidden="true"><use href="#i-flecha"></use></svg>
+      </button>
     </form>
 
     <p class="centrado">¿No tiene cuenta? <a href="/registro.html">Regístrese aquí</a></p>
