@@ -17,6 +17,8 @@ def _datos_basicos(datos):
 
     if nombre == "" or correo == "" or telefono == "" or ciudad == "":
         raise ErrorNegocio("Todos los campos son obligatorios.")
+    if datos.get("acepta_privacidad") is not True:
+        raise ErrorNegocio("Debe aceptar la política de privacidad.")
     if len(clave) < 8:
         raise ErrorNegocio("La contraseña debe tener mínimo 8 caracteres.")
     if len(repo.usuarios.buscar_por("correo", correo)) > 0:

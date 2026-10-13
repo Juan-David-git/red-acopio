@@ -1,13 +1,14 @@
 // Panel del conductor: aceptar recogida, ver entregas (RF005),
 // marcar como entregada (RF006) y horarios (RF020)
+// (pedirApi, mostrarMensaje, limpiar, etc. estan en comun.js)
 
-const mensaje = document.getElementById("mensaje");
 let conductor = null;
 
 // ---------- al abrir la pagina ----------
 async function iniciar() {
-  const respuesta = await fetch("/api/sesion");
-  conductor = await respuesta.json();
+  const r = await pedirApi("/api/sesion");
+  if (!r.ok) return;
+  conductor = r.datos;
 
   // revisar que haya sesion y que sea conductor
   if (conductor.rol !== "conductor") {
@@ -30,7 +31,7 @@ botones.forEach(function (boton) {
     });
     boton.classList.add("activa");
     document.getElementById(boton.dataset.seccion).classList.remove("oculto");
-    mensaje.className = "mensaje";
+    ocultarMensaje();
 
     if (boton.dataset.seccion === "seccion-recoger") cargarPorRecoger();
     if (boton.dataset.seccion === "seccion-entregas") cargarEntregas();
@@ -53,8 +54,9 @@ function tarjeta(d) {
 // ---------- POR RECOGER ----------
 async function cargarPorRecoger() {
   const contenedor = document.getElementById("lista-recoger");
-  const respuesta = await fetch("/api/donaciones/disponibles");
-  const lista = await respuesta.json();
+  const r = await pedirApi("/api/donaciones/disponibles");
+  if (!r.ok) return;
+  const lista = r.datos;
 
   if (lista.length === 0) {
     contenedor.innerHTML = '<p class="vacio">No hay donaciones esperando conductor en este momento. 🙌</p>';
@@ -75,21 +77,18 @@ async function aceptar(id) {
   if (!confirm("¿Se compromete a recoger esta donación y llevarla al centro de acopio?")) {
     return;
   }
-  const respuesta = await fetch("/api/donaciones/" + id + "/aceptar", { method: "POST" });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones/" + id + "/aceptar");
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
   cargarPorRecoger();
 }
 
 // ---------- MIS ENTREGAS ----------
 async function cargarEntregas() {
-  const respuesta = await fetch("/api/mis-entregas");
-  const datos = await respuesta.json();
+  const r = await pedirApi("/api/mis-entregas");
+  if (!r.ok) return;
+  const datos = r.datos;
 
   // pendientes: con boton para marcar entregada
   const pendientes = document.getElementById("lista-pendientes");
@@ -127,13 +126,9 @@ async function completar(id) {
   if (!confirm("¿Confirma que ya entregó esta donación en el centro de acopio?")) {
     return;
   }
-  const respuesta = await fetch("/api/donaciones/" + id + "/completar", { method: "POST" });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  const r = await enviarJson("/api/donaciones/" + id + "/completar");
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
   cargarEntregas();
 }
@@ -156,56 +151,13 @@ document.getElementById("form-horarios").addEventListener("submit", async functi
     franjas.push(c.value);
   });
 
-  const respuesta = await fetch("/api/disponibilidad", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ disponible: disponible, franjas: franjas })
-  });
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
+  const r = await enviarJson("/api/disponibilidad", { disponible: disponible, franjas: franjas });
+  if (r.ok) {
     conductor.disponible = disponible;
     conductor.franjas = franjas;
-    mostrarMensaje(resultado.mensaje, "exito");
-  } else {
-    mostrarMensaje(resultado.error, "error");
+    mostrarMensaje(r.datos.mensaje, "exito");
   }
 });
 
-// ---------- salir ----------
-document.getElementById("boton-salir").addEventListener("click", async function () {
-  await fetch("/api/logout", { method: "POST" });
-  window.location.href = "/";
-});
-
-// ---------- ayudas ----------
-function mostrarMensaje(texto, tipo) {
-  mensaje.textContent = texto;
-  mensaje.className = "mensaje " + tipo;
-  window.scrollTo(0, 0);
-}
-
-function etiquetaEstado(estado) {
-  const textos = {
-    "publicada": "Publicada",
-    "en camino": "En camino",
-    "recibida": "Recibida",
-    "cancelada": "Cancelada"
-  };
-  return '<span class="estado ' + estado.replace(" ", "-") + '">' + textos[estado] + "</span>";
-}
-
-function formatearFecha(texto) {
-  if (!texto) return "";
-  const partes = texto.split(" ");
-  const f = partes[0].split("-");
-  return f[2] + "/" + f[1] + "/" + f[0] + " " + partes[1];
-}
-
-function limpiar(texto) {
-  const div = document.createElement("div");
-  div.textContent = texto;
-  return div.innerHTML;
-}
-
+activarBotonSalir();
 iniciar();

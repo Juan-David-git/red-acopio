@@ -32,6 +32,11 @@ class Manejador(BaseHTTPRequestHandler):
 
     # ---------- GET: el navegador pide algo ----------
     def do_GET(self):
+        # una peticion a la vez toca los datos (ver candado en repositorio_json)
+        with repo.candado:
+            self.atender_get()
+
+    def atender_get(self):
         ruta = self.path.split("?")[0]
 
         try:
@@ -82,43 +87,50 @@ class Manejador(BaseHTTPRequestHandler):
 
     # ---------- POST: el navegador envia datos ----------
     def do_POST(self):
-        datos = self.leer_json()
+        with repo.candado:
+            self.atender_post()
+
+    def atender_post(self):
+        # se quita lo que venga despues de "?" igual que en GET
+        ruta = self.path.split("?")[0]
         # ej: "/api/donaciones/5/cancelar" -> ["", "api", "donaciones", "5", "cancelar"]
-        partes = self.path.split("/")
+        partes = ruta.split("/")
 
         try:
+            datos = self.leer_json()
+
             # ----- registro e inicio de sesion -----
-            if self.path == "/api/registro/donante":
+            if ruta == "/api/registro/donante":
                 registrar_donante(datos)
                 self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
 
-            elif self.path == "/api/registro/conductor":
+            elif ruta == "/api/registro/conductor":
                 registrar_conductor(datos)
                 self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
 
-            elif self.path == "/api/registro/centro":
+            elif ruta == "/api/registro/centro":
                 registrar_centro(datos)
                 self.responder_json(201, {"mensaje": "¡Centro de acopio registrado! Ya puede iniciar sesión."})
 
-            elif self.path == "/api/login":
+            elif ruta == "/api/login":
                 usuario = iniciar_sesion(datos.get("correo", ""), datos.get("clave", ""))
                 token = seguridad.crear_sesion(usuario["id"])
                 cookie = "sesion=" + token + "; Path=/; HttpOnly; SameSite=Lax"
                 self.responder_json(200, {"nombre": usuario["nombre"], "rol": usuario["rol"]}, cookie)
 
-            elif self.path == "/api/logout":
+            elif ruta == "/api/logout":
                 seguridad.cerrar_sesion(self.token())
                 self.responder_json(200, {"mensaje": "Sesión cerrada."}, "sesion=; Path=/; Max-Age=0")
 
             # ----- donante -----
-            elif self.path == "/api/donaciones":
+            elif ruta == "/api/donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
                     donaciones_servicio.publicar(usuario["id"], datos)
                     self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
 
             # ----- conductor: horarios (RF020) -----
-            elif self.path == "/api/disponibilidad":
+            elif ruta == "/api/disponibilidad":
                 usuario = self.exigir_rol("conductor")
                 if usuario:
                     actualizar_disponibilidad(usuario["id"], datos.get("disponible", False), datos.get("franjas", []))
@@ -126,7 +138,11 @@ class Manejador(BaseHTTPRequestHandler):
 
             # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
             elif len(partes) == 5 and partes[2] == "donaciones":
-                id_donacion = int(partes[3])
+                # si el id no es un numero (ej: /api/donaciones/abc/aceptar)
+                try:
+                    id_donacion = int(partes[3])
+                except ValueError:
+                    raise ErrorNegocio("La donación no existe.")
                 accion = partes[4]
 
                 if accion == "cancelar":
@@ -164,7 +180,7 @@ class Manejador(BaseHTTPRequestHandler):
         archivo = os.path.normpath(os.path.join(CARPETA_WEB, ruta.lstrip("/")))
 
         # que no se puedan pedir archivos por fuera de la carpeta web
-        if not archivo.startswith(CARPETA_WEB) or not os.path.isfile(archivo):
+        if not archivo.startswith(CARPETA_WEB + os.sep) or not os.path.isfile(archivo):
             self.send_response(404)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
@@ -184,11 +200,18 @@ class Manejador(BaseHTTPRequestHandler):
 
     def leer_json(self):
         # lee el cuerpo de la peticion y lo convierte a diccionario
-        largo = int(self.headers.get("Content-Length", 0))
+        largo = int(self.headers.get("Content-Length", 0) or 0)
         if largo == 0:
             return {}
         texto = self.rfile.read(largo).decode("utf-8")
-        return json.loads(texto)
+        # si mandan algo que no es JSON (o no es un objeto), error claro en vez de caerse
+        try:
+            datos = json.loads(texto)
+        except ValueError:
+            raise ErrorNegocio("Los datos enviados no son válidos.")
+        if not isinstance(datos, dict):
+            raise ErrorNegocio("Los datos enviados no son válidos.")
+        return datos
 
     def responder_json(self, codigo, datos, cookie=None):
         # convierte el diccionario a JSON y lo envia
@@ -227,7 +250,10 @@ class Manejador(BaseHTTPRequestHandler):
         return usuario
 
 
-servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
-print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
-webbrowser.open("http://localhost:8000")
-servidor.serve_forever()
+# solo arranca si se ejecuta "python app.py"
+# (si otro archivo hace "import app", por ejemplo una prueba, no se lanza el servidor)
+if __name__ == "__main__":
+    servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
+    print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+    webbrowser.open("http://localhost:8000")
+    servidor.serve_forever()

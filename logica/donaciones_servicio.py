@@ -5,6 +5,7 @@
 from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
+from logica.usuarios_servicio import CATEGORIAS
 
 
 # ======================= DONANTE =======================
@@ -21,6 +22,8 @@ def publicar(id_donante, datos):
     except ValueError:
         raise ErrorNegocio("La cantidad debe ser un número.")
 
+    if categoria not in CATEGORIAS:
+        raise ErrorNegocio("Seleccione una categoría.")
     if articulo == "":
         raise ErrorNegocio("Escriba qué artículo va a donar.")
     if cantidad <= 0:
@@ -35,6 +38,18 @@ def publicar(id_donante, datos):
     # el centro tiene que necesitar esa categoria
     if categoria not in centro["necesidades"]:
         raise ErrorNegocio("El centro «" + centro["nombre"] + "» no está pidiendo " + categoria + ".")
+
+    # el centro no puede recibir mas de su capacidad maxima
+    # (cuenta lo que esta publicado, en camino o ya recibido; lo cancelado no)
+    ocupado = 0
+    for d in repo.donaciones.buscar_por("id_centro", id_centro):
+        if d["estado"] != "cancelada":
+            ocupado += d["cantidad"]
+    libre = centro["capacidad_maxima"] - ocupado
+    if cantidad > libre:
+        if libre <= 0:
+            raise ErrorNegocio("El centro «" + centro["nombre"] + "» ya está lleno. Escoja otro centro.")
+        raise ErrorNegocio("El centro «" + centro["nombre"] + "» solo puede recibir " + str(libre) + " artículos más.")
 
     nueva = {
         "id_donante": id_donante,
