@@ -538,7 +538,7 @@ label.check input {
 }
 /* Llamar y WhatsApp lado a lado; el botón principal ocupa toda la fila */
 .donacion-acciones .boton { flex: 1 1 100%; }
-.donacion-acciones .boton.secundario { flex: 1 1 0; min-width: 0; min-height: 48px; padding: 10px 12px; gap: 8px; }
+.donacion-acciones .boton.secundario { flex: 1 1 0; min-width: 0; min-height: 48px; padding: 10px 12px; gap: 8px; white-space: normal; line-height: 1.15; }
 
 /* etiqueta de estado */
 .estado {
@@ -566,6 +566,57 @@ label.check input {
   border: 2px dashed var(--borde);
   border-radius: 20px;
 }
+
+/* ---------- panel del centro de acopio ---------- */
+.resumen-centro .tarjeta-titulo p { font-size: .92rem; }
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 20px 0 18px;
+}
+.cifra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  border-radius: var(--radio-chico);
+  background: var(--petroleo-suave);
+  text-align: center;
+}
+.cifra strong { font: 700 1.7rem var(--titulos); color: var(--petroleo); line-height: 1.1; }
+.cifra span { font-size: .85rem; color: var(--gris); font-weight: 700; }
+.cifra:nth-child(1) { background: var(--encamino-fondo); }
+.cifra:nth-child(1) strong { color: var(--encamino); }
+.cifra:nth-child(2) { background: var(--recibida-fondo); }
+.cifra:nth-child(2) strong { color: var(--recibida); }
+
+.ocupacion-texto {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: .9rem;
+  color: var(--gris);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.ocupacion-barra {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--borde);
+  overflow: hidden;
+}
+.ocupacion-barra > div {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--petroleo);
+  transition: width .4s ease-out;
+}
+.ocupacion-barra.casi > div { background: var(--publicada); }
+.ocupacion-barra.lleno > div { background: var(--cancelada); }
 
 /* ---------- mapas ---------- */
 .mapa {

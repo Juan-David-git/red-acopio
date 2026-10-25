@@ -38,4 +38,5 @@ Trabaja sobre una copia temporal de los JSON, así que no cambia los datos reale
 ## Notas
 
 - Las sesiones se guardan en memoria: si se reinicia el servidor, hay que volver a iniciar sesión.
-- Roles: donante, conductor y gestor (encargado de centro de acopio). El panel del gestor está pendiente.
+- Roles: donante, conductor y gestor (encargado de centro de acopio).
+- Panel del centro (`panel.html`): el encargado ve lo que viene en camino y lo recibido, confirma la llegada de una donación (además del conductor) y actualiza horario, capacidad y necesidades. Si deja las necesidades vacías, el centro deja de aparecer para los donantes.
