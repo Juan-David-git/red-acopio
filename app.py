@@ -12,6 +12,7 @@ from logica.usuarios_servicio import (
     iniciar_sesion, actualizar_disponibilidad
 )
 from logica import donaciones_servicio
+from logica import centros_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -78,6 +79,17 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     self.responder_json(200, donaciones_servicio.entregas_del_conductor(usuario["id"]))
 
+            # ----- centro de acopio (encargado) -----
+            elif ruta == "/api/mi-centro":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.resumen(usuario["id"]))
+
+            elif ruta == "/api/mi-centro/donaciones":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.donaciones(usuario["id"]))
+
             # si no es de la API, es un archivo (html, css, js)
             else:
                 self.servir_archivo(ruta)
@@ -136,6 +148,13 @@ class Manejador(BaseHTTPRequestHandler):
                     actualizar_disponibilidad(usuario["id"], datos.get("disponible", False), datos.get("franjas", []))
                     self.responder_json(200, {"mensaje": "Horarios guardados."})
 
+            # ----- centro de acopio: actualizar horario, capacidad y necesidades -----
+            elif ruta == "/api/mi-centro":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    centro = centros_servicio.actualizar(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Datos del centro guardados.", "centro": centro})
+
             # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
             elif len(partes) == 5 and partes[2] == "donaciones":
                 # si el id no es un numero (ej: /api/donaciones/abc/aceptar)
@@ -162,6 +181,12 @@ class Manejador(BaseHTTPRequestHandler):
                     if usuario:
                         donaciones_servicio.marcar_entregada(usuario["id"], id_donacion)
                         self.responder_json(200, {"mensaje": "Entrega registrada. ¡Gracias por ayudar!"})
+
+                elif accion == "recibir":
+                    usuario = self.exigir_rol("gestor")
+                    if usuario:
+                        centros_servicio.confirmar_recepcion(usuario["id"], id_donacion)
+                        self.responder_json(200, {"mensaje": "Donación recibida. ¡Quedó registrada en su centro!"})
 
                 else:
                     self.responder_json(404, {"error": "Ruta no encontrada."})
