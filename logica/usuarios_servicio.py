@@ -22,6 +22,8 @@ def _datos_basicos(datos):
         raise ErrorNegocio("Debe aceptar la política de privacidad.")
     if len(clave) < 8:
         raise ErrorNegocio("La contraseña debe tener mínimo 8 caracteres.")
+    if not datos.get("acepta_privacidad"):
+        raise ErrorNegocio("Debe aceptar la política de privacidad para registrarse.")
     if len(repo.usuarios.buscar_por("correo", correo)) > 0:
         raise ErrorNegocio("Ya existe una cuenta con ese correo.")
 

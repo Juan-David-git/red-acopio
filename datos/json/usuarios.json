@@ -80,5 +80,15 @@
     ],
     "disponible": true,
     "id": 7
+  },
+  {
+    "nombre": "Valentina Osorio",
+    "correo": "valentina@gmail.com",
+    "telefono": "3007896541",
+    "ciudad": "Floridablanca",
+    "clave_hash": "ec1cd82beb44390a67aa8ea74bdb254820670b5751e43b593027d4bee9c79953",
+    "sal": "96bc8438398fbfb7",
+    "rol": "donante",
+    "id": 8
   }
 ]
