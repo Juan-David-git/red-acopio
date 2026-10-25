@@ -29,6 +29,7 @@ Trabaja sobre una copia temporal de los JSON, así que no cambia los datos reale
 ## Mapas
 
 - Se usan [Leaflet](https://leafletjs.com) y mapas de OpenStreetMap (sin clave). El código está en `presentacion/web/js/mapa.js`.
+- Al registrarse, el centro de acopio marca su ubicación en el mapa (sin internet se escriben latitud y longitud a mano).
 - El donante marca en el mapa el punto de recogida; el conductor y el donante ven el recorrido planeado hasta el centro de acopio, con distancia, tiempo estimado y un botón para abrirlo en Google Maps.
 - La ruta por calles la calcula el servicio público de OSRM. Si no responde, se dibuja una línea recta con la distancia aproximada.
 - Los mapas necesitan internet. Sin conexión, la página sigue funcionando y la donación se publica solo con la dirección escrita.

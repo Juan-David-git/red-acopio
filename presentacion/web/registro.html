@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Red Acopio - Registro</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
@@ -143,13 +144,30 @@
 
         <label>
           <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
-          Ubicación en el mapa
+          Marque en el mapa dónde queda el centro
         </label>
-        <div class="fila">
-          <input type="text" id="latitud" placeholder="Latitud: 7.1193" inputmode="decimal">
-          <input type="text" id="longitud" placeholder="Longitud: -73.1227" inputmode="decimal">
+
+        <!-- con internet: se toca el mapa (registro.js llena latitud y longitud) -->
+        <div id="ubicacion-mapa">
+          <p class="ayuda" style="margin: 0 0 10px">Toque el mapa en la puerta del centro. Así los conductores lo encuentran fácil.</p>
+          <div id="mapa-centro" class="mapa mapa-elegir" aria-label="Mapa para marcar dónde queda el centro"></div>
+          <div class="mapa-herramientas">
+            <button type="button" id="boton-ubicacion" class="boton secundario">
+              <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+              Estoy en el centro
+            </button>
+            <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+          </div>
         </div>
-        <p class="ayuda">En Google Maps haga clic derecho sobre el lugar y copie los dos números.</p>
+
+        <!-- sin internet (el mapa no carga): se escriben los numeros a mano -->
+        <div id="ubicacion-manual" class="oculto">
+          <div class="fila">
+            <input type="text" id="latitud" placeholder="Latitud: 7.1193" inputmode="decimal">
+            <input type="text" id="longitud" placeholder="Longitud: -73.1227" inputmode="decimal">
+          </div>
+          <p class="ayuda">No se pudo cargar el mapa. En Google Maps haga clic derecho sobre el lugar y copie los dos números.</p>
+        </div>
 
         <h2>¿Qué necesita el centro?</h2>
         <p class="ayuda">Escriba las cosas separadas por comas. Deje vacío lo que no necesite.</p>
@@ -188,6 +206,9 @@
     <p class="centrado">¿Ya tiene cuenta? <a href="/login.html">Inicie sesión</a></p>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
   <script src="/js/registro.js"></script>
 </body>
 </html>

@@ -29,8 +29,38 @@ botones.forEach(function (boton) {
     }
 
     mensaje.className = "mensaje";
+
+    // el mapa se crea la primera vez que se abre la pestaña del centro
+    // (Leaflet necesita que el mapa este visible para medir su tamaño)
+    if (tipo === "centro") iniciarMapaCentro();
   });
 });
+
+// ---------- mapa para ubicar el centro de acopio ----------
+let selectorCentro = null;
+
+function iniciarMapaCentro() {
+  if (selectorCentro || document.getElementById("ubicacion-mapa").classList.contains("oculto")) return;
+
+  // sin internet: mostrar los campos para escribir latitud y longitud
+  if (!mapaDisponible()) {
+    document.getElementById("ubicacion-mapa").classList.add("oculto");
+    document.getElementById("ubicacion-manual").classList.remove("oculto");
+    return;
+  }
+
+  const mapa = crearMapa(document.getElementById("mapa-centro"));
+  selectorCentro = selectorDePunto(mapa, {
+    tipo: "centro",
+    estado: document.getElementById("estado-punto"),
+    botonUbicacion: document.getElementById("boton-ubicacion"),
+    // guardar el punto en los campos que se envian al servidor
+    alCambiar: function (punto) {
+      document.getElementById("latitud").value = punto ? punto[0].toFixed(6) : "";
+      document.getElementById("longitud").value = punto ? punto[1].toFixed(6) : "";
+    }
+  });
+}
 
 // ---------- ayudas ----------
 function valor(id) {
@@ -48,11 +78,7 @@ function separarPorComas(texto) {
   return lista;
 }
 
-function mostrarMensaje(texto, tipoMensaje) {
-  mensaje.textContent = texto;
-  mensaje.className = "mensaje " + tipoMensaje;
-  window.scrollTo(0, 0);
-}
+// (mostrarMensaje esta en comun.js)
 
 // ---------- enviar ----------
 formulario.addEventListener("submit", async function (evento) {
@@ -115,6 +141,7 @@ formulario.addEventListener("submit", async function (evento) {
   if (respuesta.ok) {
     mostrarMensaje(resultado.mensaje, "exito");
     formulario.reset();
+    if (selectorCentro) selectorCentro.quitar();
   } else {
     mostrarMensaje(resultado.error, "error");
   }
