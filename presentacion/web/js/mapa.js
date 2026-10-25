@@ -186,3 +186,78 @@ function alternarRecorrido(boton, d) {
     mostrarRecorrido(caja, d);
   }
 }
+
+// ---------- marcar un punto tocando el mapa ----------
+// Lo usan el donante (punto de recogida) y el registro del centro de acopio.
+//   const selector = selectorDePunto(mapa, {
+//     tipo: "recogida" | "centro",          // color del pin
+//     estado: elemento <p> donde se dice si ya marco,
+//     botonUbicacion: boton "Usar mi ubicacion" (opcional),
+//     alCambiar: function (punto) { ... }    // punto es [lat, lon] o null
+//   });
+//   selector.punto()   -> [lat, lon] o null
+//   selector.quitar()  -> borra el pin
+function selectorDePunto(mapa, opciones) {
+  let pin = null;
+  const textoVacio = opciones.estado ? opciones.estado.textContent : "";
+
+  function avisar() {
+    const punto = pin ? [pin.getLatLng().lat, pin.getLatLng().lng] : null;
+    if (opciones.estado) {
+      opciones.estado.className = "mapa-estado" + (punto ? " listo" : "");
+      opciones.estado.innerHTML = punto
+        ? icono("check") + "Punto marcado. Puede arrastrarlo para corregirlo."
+        : textoVacio;
+    }
+    if (opciones.alCambiar) opciones.alCambiar(punto);
+  }
+
+  function marcar(punto) {
+    if (pin) {
+      pin.setLatLng(punto);
+    } else {
+      pin = ponerMarcador(mapa, punto, opciones.tipo || "recogida");
+      pin.dragging.enable();               // se puede arrastrar para corregir
+      pin.on("dragend", avisar);
+    }
+    avisar();
+  }
+
+  function quitar() {
+    if (pin) pin.remove();
+    pin = null;
+    avisar();
+  }
+
+  // tocar el mapa = marcar el punto
+  mapa.on("click", function (e) {
+    marcar([e.latlng.lat, e.latlng.lng]);
+  });
+
+  // "Usar mi ubicacion": el navegador pregunta si permite compartirla
+  if (opciones.botonUbicacion) {
+    opciones.botonUbicacion.addEventListener("click", function () {
+      const boton = this;
+      if (!navigator.geolocation) {
+        mostrarMensaje("Su navegador no permite saber su ubicación. Toque el mapa para marcarla.", "error");
+        return;
+      }
+      boton.disabled = true;
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        boton.disabled = false;
+        const punto = [pos.coords.latitude, pos.coords.longitude];
+        marcar(punto);
+        mapa.setView(punto, 17);
+      }, function () {
+        boton.disabled = false;
+        mostrarMensaje("No pudimos obtener su ubicación. Toque el mapa para marcarla.", "error");
+      }, { enableHighAccuracy: true, timeout: 10000 });
+    });
+  }
+
+  return {
+    marcar: marcar,
+    quitar: quitar,
+    punto: function () { return pin ? [pin.getLatLng().lat, pin.getLatLng().lng] : null; }
+  };
+}
