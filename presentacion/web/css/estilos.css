@@ -4,7 +4,13 @@
    sobre fondo crema. Pensado primero para celular.
    ========================================================= */
 
-@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap");
+/* Letras guardadas dentro del proyecto (sin depender de Google) */
+@font-face { font-family: "Lexend"; font-weight: 500; font-display: swap; src: url("fuentes/lexend-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Lexend"; font-weight: 600; font-display: swap; src: url("fuentes/lexend-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Lexend"; font-weight: 700; font-display: swap; src: url("fuentes/lexend-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito Sans"; font-weight: 400; font-display: swap; src: url("fuentes/nunito-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito Sans"; font-weight: 600; font-display: swap; src: url("fuentes/nunito-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito Sans"; font-weight: 700; font-display: swap; src: url("fuentes/nunito-sans-latin-700-normal.woff2") format("woff2"); }
 
 :root {
   --naranja: #E8793A;

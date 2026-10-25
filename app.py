@@ -26,6 +26,7 @@ TIPOS = {
     ".png": "image/png",
     ".jpg": "image/jpeg",
     ".svg": "image/svg+xml",
+    ".woff2": "font/woff2",
 }
 
 
