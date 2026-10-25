@@ -2,6 +2,12 @@
 // (pedirApi, mostrarMensaje, limpiar, etc. estan en comun.js)
 
 let centros = [];
+let misDonaciones = [];
+
+// mapa del formulario
+let mapaDonar = null;
+let pinRecogida = null;          // marcador naranja que pone el donante
+let marcadoresCentros = {};      // id del centro -> marcador verde
 
 // ---------- al abrir la pagina ----------
 async function iniciar() {
@@ -18,6 +24,8 @@ async function iniciar() {
   // traer los centros para el formulario
   const rc = await pedirApi("/api/centros");
   if (rc.ok) centros = rc.datos;
+
+  iniciarMapaDonar();
 }
 
 // ---------- pestañas ----------
@@ -64,6 +72,7 @@ function elegirCategoria(categoria) {
 
   if (categoria === "") {
     select.innerHTML = '<option value="">Primero escoja la categoría…</option>';
+    pintarCentros();
     return;
   }
 
@@ -80,6 +89,7 @@ function elegirCategoria(categoria) {
     opciones = '<option value="">Ningún centro necesita esto ahora</option>';
   }
   select.innerHTML = opciones;
+  pintarCentros();
 }
 
 // ---------- al escoger centro: decir que necesita ----------
@@ -94,6 +104,100 @@ document.getElementById("id_centro").addEventListener("change", function () {
   } else {
     texto.textContent = "";
   }
+
+  const marcador = centro && marcadoresCentros[centro.id];
+  if (marcador) {
+    mapaDonar.panTo(marcador.getLatLng());
+    marcador.openPopup();
+  }
+});
+
+// ---------- mapa del formulario ----------
+function iniciarMapaDonar() {
+  const caja = document.getElementById("mapa-recogida");
+  if (!mapaDisponible()) {
+    caja.outerHTML = '<p class="mapa-aviso">' + icono("info") +
+      "No se pudo cargar el mapa (revise su conexión). Puede publicar solo con la dirección.</p>";
+    document.getElementById("boton-ubicacion").classList.add("oculto");
+    document.getElementById("estado-punto").classList.add("oculto");
+    return;
+  }
+
+  mapaDonar = crearMapa(caja);
+  pintarCentros();
+
+  // tocar el mapa = marcar el punto de recogida
+  mapaDonar.on("click", function (e) {
+    marcarRecogida([e.latlng.lat, e.latlng.lng]);
+  });
+}
+
+// centros en verde; si ya escogio categoria, los que no la necesitan quedan en gris
+function pintarCentros() {
+  if (!mapaDonar) return;
+  const categoria = document.getElementById("categoria").value;
+
+  Object.values(marcadoresCentros).forEach(function (m) { m.remove(); });
+  marcadoresCentros = {};
+
+  centros.forEach(function (c) {
+    if (c.latitud == null || c.longitud == null) return;
+    const sirve = categoria === "" || Boolean(c.necesidades[categoria]);
+    let texto = limpiar(c.nombre) + '<br><small style="font-weight:400">' + limpiar(c.barrio) + "</small>";
+    if (categoria !== "" && sirve) {
+      texto += '<br><button type="button" class="boton verde" onclick="escogerCentro(' + c.id + ')">Llevar aquí</button>';
+    } else if (categoria !== "") {
+      texto += '<br><small style="font-weight:400">No está pidiendo ' + limpiar(categoria) + "</small>";
+    }
+    marcadoresCentros[c.id] = ponerMarcador(mapaDonar, [c.latitud, c.longitud], sirve ? "centro" : "centroApagado", texto);
+  });
+}
+
+// boton "Llevar aqui" de la ventanita de un centro
+function escogerCentro(id) {
+  const select = document.getElementById("id_centro");
+  select.value = String(id);
+  select.dispatchEvent(new Event("change"));
+  mapaDonar.closePopup();
+}
+
+function marcarRecogida(punto) {
+  if (pinRecogida) {
+    pinRecogida.setLatLng(punto);
+  } else {
+    pinRecogida = ponerMarcador(mapaDonar, punto, "recogida");
+    pinRecogida.dragging.enable();   // se puede arrastrar para corregir
+  }
+  const estado = document.getElementById("estado-punto");
+  estado.className = "mapa-estado listo";
+  estado.innerHTML = icono("check") + "Punto marcado. Puede arrastrarlo para corregirlo.";
+}
+
+function quitarRecogida() {
+  if (pinRecogida) pinRecogida.remove();
+  pinRecogida = null;
+  const estado = document.getElementById("estado-punto");
+  estado.className = "mapa-estado";
+  estado.textContent = "Todavía no ha marcado el punto.";
+}
+
+// "Usar mi ubicacion": el navegador pregunta si permite compartirla
+document.getElementById("boton-ubicacion").addEventListener("click", function () {
+  if (!navigator.geolocation) {
+    mostrarMensaje("Su navegador no permite saber su ubicación. Toque el mapa para marcarla.", "error");
+    return;
+  }
+  const boton = this;
+  boton.disabled = true;
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    boton.disabled = false;
+    const punto = [pos.coords.latitude, pos.coords.longitude];
+    marcarRecogida(punto);
+    mapaDonar.setView(punto, 17);
+  }, function () {
+    boton.disabled = false;
+    mostrarMensaje("No pudimos obtener su ubicación. Toque el mapa para marcarla.", "error");
+  }, { enableHighAccuracy: true, timeout: 10000 });
 });
 
 // ---------- publicar ----------
@@ -115,11 +219,23 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
     return;
   }
 
+  // si el mapa cargo, el punto es obligatorio
+  if (mapaDonar && !pinRecogida) {
+    mostrarMensaje("Toque el mapa para marcar dónde se recoge la donación.", "error");
+    return;
+  }
+  if (pinRecogida) {
+    const p = pinRecogida.getLatLng();
+    datos.latitud_recogida = p.lat;
+    datos.longitud_recogida = p.lng;
+  }
+
   const r = await enviarJson("/api/donaciones", datos);
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
     formulario.reset();
     elegirCategoria("");
+    quitarRecogida();
   }
 });
 
@@ -137,6 +253,7 @@ async function cargarDonaciones() {
 
   // las mas nuevas primero
   lista.reverse();
+  misDonaciones = lista;
 
   let html = "";
   lista.forEach(function (d) {
@@ -158,15 +275,26 @@ async function cargarDonaciones() {
     }
     html += "</div>";
 
-    // solo se puede cancelar si esta publicada (RF016)
-    if (d.estado === "publicada") {
+    // mientras no se ha entregado, puede ver el recorrido planeado hasta el centro
+    const activa = d.estado === "publicada" || d.estado === "en camino";
+    if (activa) {
       html += '<div class="donacion-acciones">';
-      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">' + icono("basura") + "Cancelar donación</button>";
+      html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
+      // solo se puede cancelar si esta publicada (RF016)
+      if (d.estado === "publicada") {
+        html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">' + icono("basura") + "Cancelar donación</button>";
+      }
       html += "</div>";
+      html += '<div class="donacion-mapa oculto"></div>';
     }
     html += "</div>";
   });
   contenedor.innerHTML = html;
+}
+
+function verRecorrido(boton, id) {
+  const d = misDonaciones.find(function (x) { return x.id === id; });
+  if (d) alternarRecorrido(boton, d);
 }
 
 async function cancelar(id) {
