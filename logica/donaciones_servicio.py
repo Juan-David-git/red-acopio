@@ -7,6 +7,10 @@ from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
 from logica.usuarios_servicio import CATEGORIAS
 
+# Zona donde operamos: area metropolitana de Bucaramanga
+# (Bucaramanga, Floridablanca, Giron y Piedecuesta, con margen)
+LIMITES_MAPA = {"lat_min": 6.85, "lat_max": 7.35, "lon_min": -73.35, "lon_max": -72.90}
+
 
 # ======================= DONANTE =======================
 
@@ -30,6 +34,10 @@ def publicar(id_donante, datos):
         raise ErrorNegocio("La cantidad debe ser mayor que cero.")
     if direccion == "":
         raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+
+    # punto de recogida marcado en el mapa (opcional: si no hay internet
+    # el mapa no carga, y la donacion igual se puede publicar con la direccion)
+    latitud, longitud = _leer_punto(datos)
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
@@ -59,6 +67,8 @@ def publicar(id_donante, datos):
         "cantidad": cantidad,
         "descripcion": descripcion,
         "direccion_recogida": direccion,
+        "latitud_recogida": latitud,
+        "longitud_recogida": longitud,
         "estado": "publicada",
         "id_conductor": None,
         "fecha_publicacion": ahora(),
@@ -151,6 +161,27 @@ def _buscar(id_donacion):
     return donacion
 
 
+def _leer_punto(datos):
+    # devuelve (latitud, longitud) o (None, None) si no marcaron punto
+    lat = datos.get("latitud_recogida")
+    lon = datos.get("longitud_recogida")
+    if lat in (None, "") and lon in (None, ""):
+        return None, None
+
+    try:
+        lat = float(lat)
+        lon = float(lon)
+    except (TypeError, ValueError):
+        raise ErrorNegocio("El punto marcado en el mapa no es válido. Márquelo de nuevo.")
+
+    l = LIMITES_MAPA
+    if not (l["lat_min"] <= lat <= l["lat_max"] and l["lon_min"] <= lon <= l["lon_max"]):
+        raise ErrorNegocio("El punto de recogida está fuera del área metropolitana de Bucaramanga.")
+
+    # 6 decimales = unos 10 cm, mas que suficiente
+    return round(lat, 6), round(lon, 6)
+
+
 def _agregar_detalle(d):
     # le pega a la donacion datos del centro y del donante para mostrarlos
     centro = repo.centros.buscar_por_id(d["id_centro"])
@@ -158,6 +189,9 @@ def _agregar_detalle(d):
     if centro:
         d["centro_nombre"] = centro["nombre"]
         d["centro_direccion"] = centro["direccion"] + ", " + centro["barrio"] + ", " + centro["ciudad"]
+        # para dibujar el recorrido en el mapa
+        d["centro_latitud"] = centro.get("latitud")
+        d["centro_longitud"] = centro.get("longitud")
     if donante:
         d["donante_nombre"] = donante["nombre"]
         d["donante_telefono"] = donante["telefono"]
