@@ -643,6 +643,11 @@ label.check input {
 
 /* ventanitas de Leaflet con la letra y colores de la página */
 .leaflet-container { font-family: var(--cuerpo); }
+/* al tocar el mapa no se pinta el borde naranja grueso; con teclado se ve un borde suave por dentro */
+.leaflet-container:focus { outline: none; }
+.leaflet-container:focus-visible { outline: none; box-shadow: inset 0 0 0 3px rgba(232, 121, 58, .55); }
+/* mapa de OpenStreetMap con colores más suaves y cálidos (no afecta pines ni rutas) */
+.leaflet-tile-pane { filter: saturate(.55) sepia(.12) brightness(1.03); }
 .leaflet-popup-content-wrapper { border-radius: var(--radio-chico); box-shadow: var(--sombra); }
 .leaflet-popup-content { margin: 10px 14px; font-weight: 700; color: var(--petroleo); }
 .leaflet-popup-content .boton { margin-top: 8px; min-height: 38px; padding: 6px 14px; font-size: .9rem; }

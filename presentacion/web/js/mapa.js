@@ -22,11 +22,11 @@ function crearMapa(elemento, opciones) {
     scrollWheelZoom: false   // para no hacer zoom sin querer al bajar por la pagina
   }, opciones || {}));
 
-  // mapa base claro y suave (CARTO Voyager, datos de OpenStreetMap)
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  // mapa base de OpenStreetMap (gratis y sin clave).
+  // Los colores se suavizan en estilos.css (.leaflet-tile-pane) para que combinen con la pagina.
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    subdomains: "abcd",
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(mapa);
 
   return mapa;
@@ -100,11 +100,24 @@ async function dibujarRecorrido(mapa, origen, destino) {
     // borde blanco debajo para que la linea resalte sobre el mapa
     L.polyline(ruta.puntos, { color: "#fff", weight: 8, opacity: .9 }).addTo(mapa);
     L.polyline(ruta.puntos, { color: "#1E5A54", weight: 5 }).addTo(mapa);
+    encuadrar(mapa, ruta.puntos.concat([origen, destino]));
     return "≈ " + formatoKm(ruta.km) + " · " + ruta.minutos + " min en carro";
   }
 
   L.polyline([origen, destino], { color: "#1E5A54", weight: 4, dashArray: "8 10" }).addTo(mapa);
+  encuadrar(mapa, [origen, destino]);
   return "≈ " + formatoKm(distanciaKm(origen, destino)) + " en línea recta";
+}
+
+// acomoda el mapa para que se vean todos los puntos.
+// Arriba se deja mas espacio porque el pin dibuja 42 px por encima del punto.
+function encuadrar(mapa, puntos) {
+  mapa.invalidateSize();   // por si el mapa acaba de aparecer y Leaflet no ha medido su tamaño
+  mapa.fitBounds(L.latLngBounds(puntos), {
+    paddingTopLeft: [30, 56],
+    paddingBottomRight: [30, 24],
+    maxZoom: 17
+  });
 }
 
 function enlaceGoogleMaps(origen, destino) {
@@ -160,7 +173,7 @@ async function mostrarRecorrido(contenedor, d) {
     return;
   }
 
-  mapa.fitBounds([origen, destino], { padding: [40, 40] });
+  encuadrar(mapa, [origen, destino]);
   textoDistancia.innerHTML = icono("ruta") + "Calculando recorrido…";
   textoDistancia.innerHTML = icono("ruta") + await dibujarRecorrido(mapa, origen, destino);
 
