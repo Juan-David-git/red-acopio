@@ -1,6 +1,7 @@
 from datos import repositorio_json as repo
 from logica import seguridad
 from logica.errores import ErrorNegocio
+from logica.ubicacion import leer_punto
 
 VEHICULOS = ["moto", "carro", "camioneta"]
 FRANJAS = ["mañana", "tarde", "noche"]
@@ -76,13 +77,15 @@ def registrar_centro(datos):
     if nombre_centro == "" or direccion == "" or barrio == "" or horario == "":
         raise ErrorNegocio("Complete todos los datos del centro.")
 
-    # numeros: si escriben letras, int() o float() dan error
+    # numeros: si escriben letras, int() da error
     try:
         capacidad = int(datos.get("capacidad_maxima", 0))
-        latitud = float(datos.get("latitud", 0))
-        longitud = float(datos.get("longitud", 0))
     except ValueError:
-        raise ErrorNegocio("La capacidad y la ubicación deben ser números.")
+        raise ErrorNegocio("La capacidad máxima debe ser un número.")
+
+    # el centro tiene que estar en el mapa para que los conductores lleguen
+    latitud, longitud = leer_punto(datos.get("latitud"), datos.get("longitud"), obligatorio=True,
+                                   falta="Marque en el mapa dónde queda el centro de acopio.")
 
     if capacidad <= 0:
         raise ErrorNegocio("La capacidad máxima debe ser mayor que cero.")

@@ -6,10 +6,7 @@ from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
 from logica.usuarios_servicio import CATEGORIAS
-
-# Zona donde operamos: area metropolitana de Bucaramanga
-# (Bucaramanga, Floridablanca, Giron y Piedecuesta, con margen)
-LIMITES_MAPA = {"lat_min": 6.85, "lat_max": 7.35, "lon_min": -73.35, "lon_max": -72.90}
+from logica.ubicacion import leer_punto
 
 
 # ======================= DONANTE =======================
@@ -37,7 +34,7 @@ def publicar(id_donante, datos):
 
     # punto de recogida marcado en el mapa (opcional: si no hay internet
     # el mapa no carga, y la donacion igual se puede publicar con la direccion)
-    latitud, longitud = _leer_punto(datos)
+    latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
@@ -159,27 +156,6 @@ def _buscar(id_donacion):
     if donacion is None:
         raise ErrorNegocio("La donación no existe.")
     return donacion
-
-
-def _leer_punto(datos):
-    # devuelve (latitud, longitud) o (None, None) si no marcaron punto
-    lat = datos.get("latitud_recogida")
-    lon = datos.get("longitud_recogida")
-    if lat in (None, "") and lon in (None, ""):
-        return None, None
-
-    try:
-        lat = float(lat)
-        lon = float(lon)
-    except (TypeError, ValueError):
-        raise ErrorNegocio("El punto marcado en el mapa no es válido. Márquelo de nuevo.")
-
-    l = LIMITES_MAPA
-    if not (l["lat_min"] <= lat <= l["lat_max"] and l["lon_min"] <= lon <= l["lon_max"]):
-        raise ErrorNegocio("El punto de recogida está fuera del área metropolitana de Bucaramanga.")
-
-    # 6 decimales = unos 10 cm, mas que suficiente
-    return round(lat, 6), round(lon, 6)
 
 
 def _agregar_detalle(d):
