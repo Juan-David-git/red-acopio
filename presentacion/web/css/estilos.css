@@ -794,3 +794,91 @@ label.check input {
 .boton-ojo:hover { color: var(--petroleo); background: var(--petroleo-suave); }
 /* Edge trae su propio ojito: lo escondemos para que no salgan dos */
 input::-ms-reveal { display: none; }
+
+
+
+
+
+/* ---------- login y registro: panel de bienvenida ---------- */
+/* En celular: solo el dibujo del mapa, arriba del formulario.
+   En pantallas grandes: panel completo a la izquierda + formulario a la derecha */
+.acceso {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 4px 24px;
+}
+.acceso-panel {
+  margin: 4px 16px 0;
+  padding: 10px;
+  border-radius: 24px;
+  background: var(--petroleo);
+}
+.acceso-panel > div:not(.acceso-ilustracion),
+.acceso-lista { display: none; }
+.acceso-ilustracion svg { width: 100%; height: auto; display: block; }
+
+@media (min-width: 900px) {
+  .acceso {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: start;
+    padding: 8px 20px 24px;
+  }
+  .acceso-form { padding: 0; margin: 0; max-width: none; }
+
+  .acceso-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    position: sticky;     /* en el registro (que es largo) se queda quieto al bajar */
+    top: 20px;
+    margin: 16px 0 0;
+    padding: 34px;
+    border-radius: 32px;
+    color: #fff;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(21, 67, 63, .25);
+  }
+  /* circulos de adorno en las esquinas */
+  .acceso-panel::before,
+  .acceso-panel::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .acceso-panel::before {
+    width: 260px; height: 260px;
+    right: -90px; top: -110px;
+    background: rgba(255, 255, 255, .07);
+  }
+  .acceso-panel::after {
+    width: 180px; height: 180px;
+    left: -70px; bottom: -80px;
+    background: rgba(255, 255, 255, .06);
+  }
+  .acceso-panel > * { position: relative; }   /* el contenido va encima de los circulos */
+
+  .acceso-panel > div:not(.acceso-ilustracion) { display: block; }
+
+  .acceso-panel h2 {
+    color: #fff;
+    font-size: 1.9rem;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .acceso-panel p { margin: 0; color: rgba(255, 255, 255, .82); font-size: 1.08rem; }
+
+  .acceso-lista { display: grid; list-style: none; margin: 0; padding: 0; gap: 14px; }
+  .acceso-lista li { display: flex; align-items: center; gap: 14px; font-weight: 700; }
+  .acceso-icono {
+    width: 42px; height: 42px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .12);
+    color: #F2A15F;
+  }
+}
