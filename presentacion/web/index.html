@@ -7,33 +7,103 @@
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
-  <header class="barra">Red Acopio</header>
+  <header class="barra">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+  </header>
 
   <main class="portada">
-    <h1>Done fácil, done donde se necesita</h1>
-    <p>Encuentre el centro de acopio que necesita lo que usted quiere donar. Un conductor voluntario lo recoge y lo lleva.</p>
 
-    <a class="boton" href="/login.html">Iniciar sesión</a>
-    <a class="boton secundario" href="/registro.html">Registrarme</a>
+    <section class="heroe">
+      <div>
+        <h1>Done fácil, done donde se <em>necesita</em></h1>
+        <p>Encuentre el centro de acopio que necesita lo que usted quiere donar. Un conductor voluntario lo recoge y lo lleva.</p>
 
-    <section class="pasos">
+        <div class="acciones">
+          <a class="boton" href="/login.html">
+            <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+            Iniciar sesión
+            <svg class="ico" aria-hidden="true"><use href="#i-flecha"></use></svg>
+          </a>
+          <a class="boton secundario" href="/registro.html">
+            <svg class="ico" aria-hidden="true"><use href="#i-usuario-mas"></use></svg>
+            Registrarme
+          </a>
+        </div>
+      </div>
+
+      <!-- ilustración: caja de donaciones frente a los cerros de Bucaramanga -->
+      <div class="heroe-ilustracion" aria-hidden="true">
+        <svg viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="205" cy="170" rx="185" ry="140" fill="#FDEBDD"/>
+          <!-- cerros -->
+          <path d="M30 210 95 120l40 40 50-75 60 70 35-30 90 105z" fill="#CFE3DC"/>
+          <path d="M20 225 110 160l45 30 60-45 70 50 40-20 65 50z" fill="#A9CEC3"/>
+          <!-- ciudad -->
+          <g fill="#E6D3BF">
+            <rect x="70" y="170" width="22" height="50" rx="2"/>
+            <rect x="96" y="150" width="18" height="70" rx="2"/>
+            <rect x="118" y="178" width="26" height="42" rx="2"/>
+            <rect x="262" y="160" width="20" height="60" rx="2"/>
+            <rect x="286" y="176" width="28" height="44" rx="2"/>
+          </g>
+          <!-- sombra -->
+          <ellipse cx="205" cy="292" rx="120" ry="12" fill="#1E5A54" opacity=".12"/>
+          <!-- productos que asoman -->
+          <rect x="248" y="120" width="26" height="70" rx="6" fill="#F4C34E"/>
+          <rect x="253" y="104" width="16" height="20" rx="3" fill="#E8793A"/>
+          <rect x="250" y="140" width="22" height="22" rx="3" fill="#FFF6EC" opacity=".8"/>
+          <path d="M150 150c20-30 70-34 92-6l-6 46h-82z" fill="#2C4E7A"/>
+          <path d="M162 160c18-14 52-16 70 0" stroke="#3E6596" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <rect x="128" y="158" width="34" height="34" rx="4" fill="#B7BDC2"/>
+          <rect x="128" y="164" width="34" height="8" fill="#E8793A"/>
+          <path d="M200 140c14-8 44-6 54 10l-4 40h-52z" fill="#EBC79A"/>
+          <!-- caja -->
+          <path d="M110 186h190l-12 104H122z" fill="#D9A06A"/>
+          <path d="M110 186h190l-6 20H116z" fill="#C88A52"/>
+          <path d="M205 268s-30-17-30-37a15 15 0 0 1 30-7 15 15 0 0 1 30 7c0 20-30 37-30 37z" fill="#E8793A"/>
+          <!-- manos -->
+          <path d="M96 236c10-6 22-2 28 8l10 20c4 8-2 18-12 18H104c-10 0-16-8-16-18v-10c0-8 3-14 8-18z" fill="#E9B48C"/>
+          <path d="M314 236c-10-6-22-2-28 8l-10 20c-4 8 2 18 12 18h18c10 0 16-8 16-18v-10c0-8-3-14-8-18z" fill="#E9B48C"/>
+          <path d="M60 230c10-2 24 2 36 6v50H60z" fill="#1E5A54"/>
+          <path d="M350 230c-10-2-24 2-36 6v50h36z" fill="#1E5A54"/>
+          <!-- destellos -->
+          <path d="M318 96l8-14M334 108l14-6M300 88l2-16" stroke="#E8793A" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="pasos" aria-label="Cómo funciona">
       <div class="paso">
-        <div class="icono">📦</div>
-        <h3>1. Publique</h3>
+        <div class="icono">
+          <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg>
+          <span class="numero">1</span>
+        </div>
+        <h3>Publique</h3>
         <p>Diga qué quiere donar.</p>
       </div>
       <div class="paso">
-        <div class="icono">🚗</div>
-        <h3>2. Lo recogemos</h3>
+        <div class="icono">
+          <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg>
+          <span class="numero">2</span>
+        </div>
+        <h3>Lo recogemos</h3>
         <p>Un conductor voluntario pasa por su casa.</p>
       </div>
       <div class="paso">
-        <div class="icono">🏪</div>
-        <h3>3. Llega al centro</h3>
+        <div class="icono">
+          <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+          <span class="numero">3</span>
+        </div>
+        <h3>Llega al centro</h3>
         <p>Usted ve cuándo fue entregada.</p>
       </div>
     </section>
+
   </main>
 
 </body>

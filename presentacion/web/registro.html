@@ -4,124 +4,279 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Red Acopio - Registro</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
-  <header class="barra"><a href="/">Red Acopio</a></header>
+  <header class="barra">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+  </header>
 
-  <main class="contenedor">
-    <h1>Crear cuenta</h1>
-    <p class="subtitulo">¿Cómo quiere participar?</p>
+  <main class="acceso">
+    <!-- panel de bienvenida (en celular solo se ve el dibujo del mapa) -->
+    <aside class="acceso-panel">
+      <div class="acceso-ilustracion" aria-hidden="true">
+        <svg viewBox="0 0 360 210" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <clipPath id="recorte-mapa"><rect x="10" y="10" width="340" height="190" rx="22"/></clipPath>
+          </defs>
+          <g clip-path="url(#recorte-mapa)">
+            <!-- mapa de fondo con calles -->
+            <rect x="10" y="10" width="340" height="190" fill="#2A6D66"/>
+            <g stroke="#FFFFFF" stroke-opacity=".09" stroke-width="9" fill="none">
+              <path d="M0 62h360M0 128h360M84 0v210M196 0v210M300 0v210"/>
+              <path d="M20 210 170 20" stroke-width="5"/>
+            </g>
+            <!-- cerros de Bucaramanga -->
+            <path d="M0 150c30-30 55-48 82-44s40 26 70 22 48-40 86-38 52 28 84 22 30-14 38-16v114H0z" fill="#24625B"/>
+            <path d="M0 176c40-20 80-26 120-18s70 14 110 4 80-18 130-8v56H0z" fill="#1F5852"/>
+            <!-- arbolitos -->
+            <g fill="#3E8A79">
+              <circle cx="120" cy="170" r="7"/><circle cx="132" cy="174" r="5"/>
+              <circle cx="232" cy="164" r="6"/><circle cx="318" cy="150" r="7"/><circle cx="330" cy="156" r="5"/>
+            </g>
+          </g>
+          <!-- recorrido -->
+          <path d="M78 160C120 160 120 110 165 112s60 40 100-2 10-56 22-58" fill="none"
+                stroke="#F2A15F" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 12"/>
+          <!-- pin de la casa (recogida) -->
+          <path d="M78 170s-20-18-20-32a20 20 0 0 1 40 0c0 14-20 32-20 32z" fill="#E8793A"/>
+          <path d="M70 140l8-7 8 7v8H70z" fill="#FFF6EC"/>
+          <!-- pin del centro de acopio -->
+          <path d="M288 66s-22-19-22-34a22 22 0 0 1 44 0c0 15-22 34-22 34z" fill="#FFF6EC"/>
+          <path d="M279 33l9-8 9 8v10h-18z" fill="#1E5A54"/>
+          <path d="M288 41s-4-2.4-4-5a2 2 0 0 1 4-1 2 2 0 0 1 4 1c0 2.6-4 5-4 5z" fill="#E8793A"/>
+          <!-- camioncito -->
+          <g transform="translate(150 92)">
+            <rect x="0" y="0" width="30" height="20" rx="4" fill="#FFF6EC"/>
+            <path d="M30 6h9l7 8v6H30z" fill="#F4C34E"/>
+            <circle cx="9" cy="22" r="5" fill="#15433F" stroke="#FFF6EC" stroke-width="2"/>
+            <circle cx="37" cy="22" r="5" fill="#15433F" stroke="#FFF6EC" stroke-width="2"/>
+            <path d="M15 13s-5-3-5-6a2.6 2.6 0 0 1 5-1 2.6 2.6 0 0 1 5 1c0 3-5 6-5 6z" fill="#E8793A"/>
+          </g>
+        </svg>
+      </div>
 
-    <!-- pestañas -->
-    <div class="pestanas">
-      <button type="button" class="activa" data-tipo="donante">Donante</button>
-      <button type="button" data-tipo="conductor">Conductor</button>
-      <button type="button" data-tipo="centro">Centro de acopio</button>
-    </div>
+      <div>
+        <h2>Únase a la red de ayuda</h2>
+        <p>Donantes, conductores voluntarios y centros de acopio de Bucaramanga, conectados en un solo lugar.</p>
+      </div>
 
-    <div id="mensaje" class="mensaje"></div>
+      <ul class="acceso-lista">
+        <li>
+          <span class="acceso-icono"><svg class="ico" aria-hidden="true"><use href="#i-corazon"></use></svg></span>
+          Usted escoge qué donar y a qué centro
+        </li>
+        <li>
+          <span class="acceso-icono"><svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg></span>
+          Un conductor voluntario lo recoge
+        </li>
+        <li>
+          <span class="acceso-icono"><svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg></span>
+          Usted ve cuándo llegó al centro
+        </li>
+      </ul>
+    </aside>
 
-    <form id="form-registro" class="tarjeta">
+    <div class="contenedor acceso-form">
+      <h1>Crear cuenta</h1>
+      <p class="subtitulo">¿Cómo quiere participar?</p>
 
-      <!-- ===== datos que piden los tres ===== -->
-      <h2 id="titulo-datos">Sus datos</h2>
+      <!-- pestañas -->
+      <div class="pestanas">
+        <button type="button" class="activa" data-tipo="donante">
+          <svg class="ico" aria-hidden="true"><use href="#i-corazon"></use></svg> Donante
+        </button>
+        <button type="button" data-tipo="conductor">
+          <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg> Conductor
+        </button>
+        <button type="button" data-tipo="centro">
+          <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg> Centro
+        </button>
+      </div>
 
-      <label for="nombre">Nombre completo</label>
-      <input type="text" id="nombre" placeholder="Ej: Carmen Rodríguez">
+      <div id="mensaje" class="mensaje" role="alert"></div>
 
-      <label for="telefono">Celular / WhatsApp</label>
-      <input type="tel" id="telefono" placeholder="3001234567" maxlength="10">
+      <form id="form-registro" class="tarjeta">
 
-      <label for="ciudad">Ciudad</label>
-      <select id="ciudad">
-        <option value="">Seleccione…</option>
-        <option>Bucaramanga</option>
-        <option>Floridablanca</option>
-        <option>Girón</option>
-        <option>Piedecuesta</option>
-      </select>
+        <!-- ===== datos que piden los tres ===== -->
+        <h2 id="titulo-datos">Sus datos</h2>
 
-      <label for="correo">Correo electrónico</label>
-      <input type="email" id="correo" placeholder="nombre@correo.com">
+        <label for="nombre">
+          <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+          Nombre completo
+        </label>
+        <input type="text" id="nombre" placeholder="Ej: Carmen Rodríguez" autocomplete="name">
 
-      <label for="clave">Contraseña</label>
-      <input type="password" id="clave">
-      <p class="ayuda">Mínimo 8 caracteres.</p>
+        <label for="telefono">
+          <svg class="ico" aria-hidden="true"><use href="#i-telefono"></use></svg>
+          Celular / WhatsApp
+        </label>
+        <input type="tel" id="telefono" placeholder="3001234567" maxlength="10" autocomplete="tel">
 
-      <!-- ===== solo conductor ===== -->
-      <div id="campos-conductor" class="oculto">
-        <h2>Su vehículo</h2>
-
-        <label for="tipo_vehiculo">Tipo de vehículo</label>
-        <select id="tipo_vehiculo">
+        <label for="ciudad">
+          <svg class="ico" aria-hidden="true"><use href="#i-ciudad"></use></svg>
+          Ciudad
+        </label>
+        <select id="ciudad">
           <option value="">Seleccione…</option>
-          <option value="moto">Moto</option>
-          <option value="carro">Carro</option>
-          <option value="camioneta">Camioneta</option>
+          <option>Bucaramanga</option>
+          <option>Floridablanca</option>
+          <option>Girón</option>
+          <option>Piedecuesta</option>
         </select>
 
-        <label for="zona">Zona donde puede recoger</label>
-        <input type="text" id="zona" placeholder="Ej: Norte, Centro, Cabecera">
+        <label for="correo">
+          <svg class="ico" aria-hidden="true"><use href="#i-correo"></use></svg>
+          Correo electrónico
+        </label>
+        <input type="email" id="correo" placeholder="nombre@correo.com" autocomplete="email">
 
-        <label>¿En qué horarios puede recoger?</label>
-        <label class="check"><input type="checkbox" name="franja" value="mañana"> Mañana (6 a. m. a 12 m.)</label>
-        <label class="check"><input type="checkbox" name="franja" value="tarde"> Tarde (12 m. a 6 p. m.)</label>
-        <label class="check"><input type="checkbox" name="franja" value="noche"> Noche (6 p. m. a 9 p. m.)</label>
-      </div>
+        <label for="clave">
+          <svg class="ico" aria-hidden="true"><use href="#i-candado"></use></svg>
+          Contraseña
+        </label>
+        <input type="password" id="clave" autocomplete="new-password">
+        <p class="ayuda">Mínimo 8 caracteres.</p>
 
-      <!-- ===== solo centro de acopio ===== -->
-      <div id="campos-centro" class="oculto">
-        <h2>Datos del centro</h2>
+        <!-- ===== solo conductor ===== -->
+        <div id="campos-conductor" class="oculto">
+          <h2>Su vehículo</h2>
 
-        <label for="nombre_centro">Nombre del centro</label>
-        <input type="text" id="nombre_centro" placeholder="Ej: Tienda Don Roberto">
+          <label for="tipo_vehiculo">
+            <svg class="ico" aria-hidden="true"><use href="#i-vehiculo"></use></svg>
+            Tipo de vehículo
+          </label>
+          <select id="tipo_vehiculo">
+            <option value="">Seleccione…</option>
+            <option value="moto">Moto</option>
+            <option value="carro">Carro</option>
+            <option value="camioneta">Camioneta</option>
+          </select>
 
-        <label for="direccion">Dirección</label>
-        <input type="text" id="direccion" placeholder="Calle 10 # 22-15">
+          <label for="zona">
+            <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+            Zona donde puede recoger
+          </label>
+          <input type="text" id="zona" placeholder="Ej: Norte, Centro, Cabecera">
 
-        <label for="barrio">Barrio</label>
-        <input type="text" id="barrio">
-
-        <label for="horario">Horario de atención</label>
-        <input type="text" id="horario" placeholder="Lunes a sábado, 8 a. m. a 6 p. m.">
-
-        <label for="capacidad_maxima">Capacidad máxima (número de artículos)</label>
-        <input type="number" id="capacidad_maxima" min="1">
-
-        <label>Ubicación en el mapa</label>
-        <div class="fila">
-          <input type="text" id="latitud" placeholder="Latitud: 7.1193">
-          <input type="text" id="longitud" placeholder="Longitud: -73.1227">
+          <label>
+            <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg>
+            ¿En qué horarios puede recoger?
+          </label>
+          <label class="check"><input type="checkbox" name="franja" value="mañana"> Mañana (6 a. m. a 12 m.)</label>
+          <label class="check"><input type="checkbox" name="franja" value="tarde"> Tarde (12 m. a 6 p. m.)</label>
+          <label class="check"><input type="checkbox" name="franja" value="noche"> Noche (6 p. m. a 9 p. m.)</label>
         </div>
-        <p class="ayuda">En Google Maps haga clic derecho sobre el lugar y copie los dos números.</p>
 
-        <h2>¿Qué necesita el centro?</h2>
-        <p class="ayuda">Escriba las cosas separadas por comas. Deje vacío lo que no necesite.</p>
+        <!-- ===== solo centro de acopio ===== -->
+        <div id="campos-centro" class="oculto">
+          <h2>Datos del centro</h2>
 
-        <label for="nec_alimentos">🍚 Alimentos</label>
-        <input type="text" id="nec_alimentos" placeholder="arroz, atún, aceite">
+          <label for="nombre_centro">
+            <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+            Nombre del centro
+          </label>
+          <input type="text" id="nombre_centro" placeholder="Ej: Tienda Don Roberto">
 
-        <label for="nec_ropa">👕 Ropa</label>
-        <input type="text" id="nec_ropa" placeholder="medias, camisas">
+          <label for="direccion">
+            <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+            Dirección
+          </label>
+          <input type="text" id="direccion" placeholder="Calle 10 # 22-15">
 
-        <label for="nec_aseo">🧼 Aseo</label>
-        <input type="text" id="nec_aseo" placeholder="jabón, papel higiénico">
-      </div>
+          <label for="barrio">
+            <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+            Barrio
+          </label>
+          <input type="text" id="barrio">
 
-      <!-- ===== para todos ===== -->
-      <label class="check" style="margin-top: 24px">
-        <input type="checkbox" id="acepta_privacidad">
-        Acepto la política de privacidad
-      </label>
+          <label for="horario">
+            <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg>
+            Horario de atención
+          </label>
+          <input type="text" id="horario" placeholder="Lunes a sábado, 8 a. m. a 6 p. m.">
 
-      <button type="submit" class="boton ancho">Crear cuenta</button>
-    </form>
+          <label for="capacidad_maxima">
+            <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+            <span>Capacidad máxima <small>(número de artículos)</small></span>
+          </label>
+          <input type="number" id="capacidad_maxima" min="1" inputmode="numeric">
 
-    <p class="centrado">¿Ya tiene cuenta? <a href="/login.html">Inicie sesión</a></p>
+          <label>
+            <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+            Marque en el mapa dónde queda el centro
+          </label>
+
+          <!-- con internet: se toca el mapa (registro.js llena latitud y longitud) -->
+          <div id="ubicacion-mapa">
+            <p class="ayuda" style="margin: 0 0 10px">Toque el mapa en la puerta del centro. Así los conductores lo encuentran fácil.</p>
+            <div id="mapa-centro" class="mapa mapa-elegir" aria-label="Mapa para marcar dónde queda el centro"></div>
+            <div class="mapa-herramientas">
+              <button type="button" id="boton-ubicacion" class="boton secundario">
+                <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+                Estoy en el centro
+              </button>
+              <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+            </div>
+          </div>
+
+          <!-- sin internet (el mapa no carga): se escriben los numeros a mano -->
+          <div id="ubicacion-manual" class="oculto">
+            <div class="fila">
+              <input type="text" id="latitud" placeholder="Latitud: 7.1193" inputmode="decimal">
+              <input type="text" id="longitud" placeholder="Longitud: -73.1227" inputmode="decimal">
+            </div>
+            <p class="ayuda">No se pudo cargar el mapa. En Google Maps haga clic derecho sobre el lugar y copie los dos números.</p>
+          </div>
+
+          <h2>¿Qué necesita el centro?</h2>
+          <p class="ayuda">Escriba las cosas separadas por comas. Deje vacío lo que no necesite.</p>
+
+          <label for="nec_alimentos">
+            <svg class="ico" aria-hidden="true"><use href="#i-alimentos"></use></svg>
+            Alimentos
+          </label>
+          <input type="text" id="nec_alimentos" placeholder="arroz, atún, aceite">
+
+          <label for="nec_ropa">
+            <svg class="ico" aria-hidden="true"><use href="#i-ropa"></use></svg>
+            Ropa
+          </label>
+          <input type="text" id="nec_ropa" placeholder="medias, camisas">
+
+          <label for="nec_aseo">
+            <svg class="ico" aria-hidden="true"><use href="#i-aseo"></use></svg>
+            Aseo
+          </label>
+          <input type="text" id="nec_aseo" placeholder="jabón, papel higiénico">
+        </div>
+
+        <!-- ===== para todos ===== -->
+        <label class="check" style="margin-top: 28px">
+          <input type="checkbox" id="acepta_privacidad">
+          <span>Acepto la <a href="/privacidad.html" target="_blank">política de privacidad</a></span>
+        </label>
+
+        <button type="submit" class="boton ancho" style="margin-top: 20px">
+          <svg class="ico" aria-hidden="true"><use href="#i-usuario-mas"></use></svg>
+          Crear cuenta
+        </button>
+      </form>
+
+      <p class="centrado">¿Ya tiene cuenta? <a href="/login.html">Inicie sesión</a></p>
+    </div>
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
+  <script src="/js/ojito.js"></script>
   <script src="/js/registro.js"></script>
 </body>
 </html>

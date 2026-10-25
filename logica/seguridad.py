@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import secrets
 
 
@@ -12,7 +13,8 @@ def generar_hash(clave, sal=None):
 
 def verificar_clave(clave, hash_guardado, sal):
     h, _ = generar_hash(clave, sal)
-    return h == hash_guardado
+    # compare_digest compara sin dar pistas por el tiempo que tarda
+    return hmac.compare_digest(h, hash_guardado)
 
 
 # ---------- sesiones ----------

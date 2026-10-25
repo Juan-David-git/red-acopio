@@ -22,7 +22,7 @@
     "franjas": [
       "tarde"
     ],
-    "disponible": false,
+    "disponible": true,
     "id": 2
   },
   {
@@ -54,5 +54,51 @@
     "sal": "ae01dedd2c07c219",
     "rol": "donante",
     "id": 5
+  },
+  {
+    "nombre": "CLAUDIA JIMENA RIOS LOZANO",
+    "correo": "cayarys@hotmail.com",
+    "telefono": "+574328541",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "7aa1c08b36cdcc24f31c372dc7d60ff2c897ee8116e384ee77cdc4f62eb0d101",
+    "sal": "597a3c0b7e6b2ff4",
+    "rol": "donante",
+    "id": 6
+  },
+  {
+    "nombre": "EDWAR JIMENEZ",
+    "correo": "alejoji1909@gmail.com",
+    "telefono": "3102441769",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "c643048e4589a26e1dca9b61aed9d8e67486790d094c8ed0dec4d8d671e06dd0",
+    "sal": "341f5f901f536bd4",
+    "rol": "conductor",
+    "tipo_vehiculo": "camioneta",
+    "zona": "norte",
+    "franjas": [
+      "tarde"
+    ],
+    "disponible": true,
+    "id": 7
+  },
+  {
+    "nombre": "Valentina Osorio",
+    "correo": "valentina@gmail.com",
+    "telefono": "3007896541",
+    "ciudad": "Floridablanca",
+    "clave_hash": "ec1cd82beb44390a67aa8ea74bdb254820670b5751e43b593027d4bee9c79953",
+    "sal": "96bc8438398fbfb7",
+    "rol": "donante",
+    "id": 8
+  },
+  {
+    "nombre": "juan",
+    "correo": "juan123@gmail.com",
+    "telefono": "3001112233",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "d7a56683d5c9a9ddf410b975c87c3cb51bf2489f813111a2173d4c9f0f7c77ae",
+    "sal": "b6b38fe7a9e70326",
+    "rol": "donante",
+    "id": 9
   }
 ]

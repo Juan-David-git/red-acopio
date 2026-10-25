@@ -5,6 +5,8 @@
 from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
+from logica.usuarios_servicio import CATEGORIAS
+from logica.ubicacion import leer_punto
 
 
 # ======================= DONANTE =======================
@@ -17,16 +19,22 @@ def publicar(id_donante, datos):
 
     try:
         cantidad = int(datos.get("cantidad", 0))
-        id_centro = int(datos.get("id_centro", 0))
-    except ValueError:
-        raise ErrorNegocio("La cantidad debe ser un número.")
+        id_centro = int(datos.get("id_centro") or 0)
+    except (TypeError, ValueError):
+        raise ErrorNegocio("Revise la cantidad y el centro de acopio.")
 
+    if categoria not in CATEGORIAS:
+        raise ErrorNegocio("Seleccione una categoría.")
     if articulo == "":
         raise ErrorNegocio("Escriba qué artículo va a donar.")
     if cantidad <= 0:
         raise ErrorNegocio("La cantidad debe ser mayor que cero.")
     if direccion == "":
         raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+
+    # punto de recogida marcado en el mapa (opcional: si no hay internet
+    # el mapa no carga, y la donacion igual se puede publicar con la direccion)
+    latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
@@ -36,6 +44,13 @@ def publicar(id_donante, datos):
     if categoria not in centro["necesidades"]:
         raise ErrorNegocio("El centro «" + centro["nombre"] + "» no está pidiendo " + categoria + ".")
 
+    # el centro no puede recibir mas de su capacidad maxima
+    libre = centro["capacidad_maxima"] - ocupacion_del_centro(id_centro)
+    if cantidad > libre:
+        if libre <= 0:
+            raise ErrorNegocio("El centro «" + centro["nombre"] + "» ya está lleno. Escoja otro centro.")
+        raise ErrorNegocio("El centro «" + centro["nombre"] + "» solo puede recibir " + str(libre) + " artículos más.")
+
     nueva = {
         "id_donante": id_donante,
         "id_centro": id_centro,
@@ -44,6 +59,8 @@ def publicar(id_donante, datos):
         "cantidad": cantidad,
         "descripcion": descripcion,
         "direccion_recogida": direccion,
+        "latitud_recogida": latitud,
+        "longitud_recogida": longitud,
         "estado": "publicada",
         "id_conductor": None,
         "fecha_publicacion": ahora(),
@@ -81,6 +98,8 @@ def disponibles_para_recoger():
     lista = repo.donaciones.buscar_por("estado", "publicada")
     for d in lista:
         _agregar_detalle(d)
+        # privacidad (RNF011): el telefono solo se ve despues de aceptar
+        d.pop("donante_telefono", None)
     return lista
 
 
@@ -127,6 +146,49 @@ def marcar_entregada(id_conductor, id_donacion):
     return donacion
 
 
+# ======================= CENTRO DE ACOPIO =======================
+
+def confirmar_recepcion(id_gestor, id_donacion):
+    # el encargado del centro confirma que la donacion llego
+    # (lo mismo que "marcar entregada" del conductor, por si el conductor no lo hizo)
+    donacion = _buscar(id_donacion)
+    centro = repo.centros.buscar_por_id(donacion["id_centro"])
+
+    if centro is None or centro.get("id_gestor") != id_gestor:
+        raise ErrorNegocio("Esta donación no va para su centro de acopio.")
+    if donacion["estado"] == "publicada":
+        raise ErrorNegocio("Esta donación todavía no tiene conductor. Podrá recibirla cuando esté en camino.")
+
+    # el estado decide si se puede (patron State): solo si esta en camino
+    estado_de(donacion).completar(donacion)
+
+    repo.donaciones.actualizar(donacion)
+    return donacion
+
+
+def ocupacion_del_centro(id_centro):
+    # cuantos articulos tiene comprometidos el centro:
+    # lo publicado, en camino o ya recibido (lo cancelado no cuenta)
+    ocupado = 0
+    for d in repo.donaciones.buscar_por("id_centro", id_centro):
+        if d["estado"] != "cancelada":
+            ocupado += d["cantidad"]
+    return ocupado
+
+
+def donaciones_del_centro(id_centro):
+    lista = repo.donaciones.buscar_por("id_centro", id_centro)
+    por_llegar = []
+    recibidas = []
+    for d in lista:
+        _agregar_detalle(d)
+        if d["estado"] in ("publicada", "en camino"):
+            por_llegar.append(d)
+        elif d["estado"] == "recibida":
+            recibidas.append(d)
+    return {"por_llegar": por_llegar, "recibidas": recibidas}
+
+
 # ======================= AYUDAS =======================
 
 def _buscar(id_donacion):
@@ -143,6 +205,16 @@ def _agregar_detalle(d):
     if centro:
         d["centro_nombre"] = centro["nombre"]
         d["centro_direccion"] = centro["direccion"] + ", " + centro["barrio"] + ", " + centro["ciudad"]
+        # para dibujar el recorrido en el mapa
+        d["centro_latitud"] = centro.get("latitud")
+        d["centro_longitud"] = centro.get("longitud")
     if donante:
         d["donante_nombre"] = donante["nombre"]
         d["donante_telefono"] = donante["telefono"]
+    # quien la lleva (para que el centro sepa a quien esperar)
+    if d.get("id_conductor"):
+        conductor = repo.usuarios.buscar_por_id(d["id_conductor"])
+        if conductor:
+            d["conductor_nombre"] = conductor["nombre"]
+            d["conductor_telefono"] = conductor["telefono"]
+            d["conductor_vehiculo"] = conductor.get("tipo_vehiculo", "")

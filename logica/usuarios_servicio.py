@@ -1,6 +1,7 @@
 from datos import repositorio_json as repo
 from logica import seguridad
 from logica.errores import ErrorNegocio
+from logica.ubicacion import leer_punto
 
 VEHICULOS = ["moto", "carro", "camioneta"]
 FRANJAS = ["mañana", "tarde", "noche"]
@@ -17,8 +18,16 @@ def _datos_basicos(datos):
 
     if nombre == "" or correo == "" or telefono == "" or ciudad == "":
         raise ErrorNegocio("Todos los campos son obligatorios.")
+        # celular colombiano: 10 numeros que empiezan por 3 (ej: 3001234567)
+    telefono = telefono.replace(" ", "")
+    if not (telefono.isdigit() and len(telefono) == 10 and telefono[0] == "3"):
+        raise ErrorNegocio("El celular debe tener 10 números y empezar por 3, por ejemplo 3001234567.")
+    if datos.get("acepta_privacidad") is not True:
+        raise ErrorNegocio("Debe aceptar la política de privacidad.")
     if len(clave) < 8:
         raise ErrorNegocio("La contraseña debe tener mínimo 8 caracteres.")
+    if not datos.get("acepta_privacidad"):
+        raise ErrorNegocio("Debe aceptar la política de privacidad para registrarse.")
     if len(repo.usuarios.buscar_por("correo", correo)) > 0:
         raise ErrorNegocio("Ya existe una cuenta con ese correo.")
 
@@ -74,13 +83,15 @@ def registrar_centro(datos):
     if nombre_centro == "" or direccion == "" or barrio == "" or horario == "":
         raise ErrorNegocio("Complete todos los datos del centro.")
 
-    # numeros: si escriben letras, int() o float() dan error
+    # numeros: si escriben letras, int() da error
     try:
         capacidad = int(datos.get("capacidad_maxima", 0))
-        latitud = float(datos.get("latitud", 0))
-        longitud = float(datos.get("longitud", 0))
     except ValueError:
-        raise ErrorNegocio("La capacidad y la ubicación deben ser números.")
+        raise ErrorNegocio("La capacidad máxima debe ser un número.")
+
+    # el centro tiene que estar en el mapa para que los conductores lleguen
+    latitud, longitud = leer_punto(datos.get("latitud"), datos.get("longitud"), obligatorio=True,
+                                   falta="Marque en el mapa dónde queda el centro de acopio.")
 
     if capacidad <= 0:
         raise ErrorNegocio("La capacidad máxima debe ser mayor que cero.")

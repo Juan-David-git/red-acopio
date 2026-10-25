@@ -3,21 +3,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Red Acopio - Panel</title>
+  <title>Red Acopio - Centro de acopio</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
+  <script src="/js/iconos.js"></script>
 
-  <header class="barra"><a href="/">Red Acopio</a></header>
+  <header class="barra barra-usuario">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+    <div class="usuario">
+      <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
+      <span id="nombre-usuario"></span>
+    </div>
+    <button id="boton-salir" class="boton-salir" type="button">
+      <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
+      <span>Salir</span>
+    </button>
+  </header>
 
   <main class="contenedor">
-    <div class="tarjeta">
-      <h1 id="saludo">Cargando…</h1>
-      <p id="detalle" class="subtitulo"></p>
-      <button id="boton-salir" class="boton ancho">Cerrar sesión</button>
+
+    <!-- ===== resumen del centro ===== -->
+    <section class="tarjeta resumen-centro">
+      <div class="tarjeta-titulo">
+        <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+        <div>
+          <h2 id="nombre-centro">Cargando…</h2>
+          <p id="direccion-centro"></p>
+        </div>
+      </div>
+
+      <div class="cifras">
+        <div class="cifra">
+          <strong id="cifra-llegar">–</strong>
+          <span>Por llegar</span>
+        </div>
+        <div class="cifra">
+          <strong id="cifra-recibidas">–</strong>
+          <span>Recibidas</span>
+        </div>
+        <div class="cifra">
+          <strong id="cifra-libre">–</strong>
+          <span>Espacio libre</span>
+        </div>
+      </div>
+
+      <div class="ocupacion">
+        <div class="ocupacion-texto">
+          <span>Capacidad usada</span>
+          <span id="ocupacion-texto"></span>
+        </div>
+        <div class="ocupacion-barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="ocupacion-barra">
+          <div id="ocupacion-relleno"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- pestañas -->
+    <div class="pestanas">
+      <button type="button" class="activa" data-seccion="seccion-llegar">
+        <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg> Por llegar
+      </button>
+      <button type="button" data-seccion="seccion-recibidas">
+        <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Recibidas
+      </button>
+      <button type="button" data-seccion="seccion-centro">
+        <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg> Mi centro
+      </button>
     </div>
+
+    <div id="mensaje" class="mensaje" role="alert"></div>
+
+    <!-- ===== POR LLEGAR: publicadas y en camino ===== -->
+    <section id="seccion-llegar">
+      <p class="subtitulo">Donaciones que vienen para su centro. Cuando el conductor llegue, toque «Confirmar recibido».</p>
+      <div id="lista-llegar"></div>
+    </section>
+
+    <!-- ===== RECIBIDAS ===== -->
+    <section id="seccion-recibidas" class="oculto">
+      <div id="lista-recibidas"></div>
+    </section>
+
+    <!-- ===== MI CENTRO: horario, capacidad y necesidades ===== -->
+    <section id="seccion-centro" class="oculto">
+      <form id="form-centro" class="tarjeta">
+        <div class="tarjeta-titulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-lista"></use></svg>
+          <div>
+            <h2>¿Qué necesita su centro?</h2>
+            <p>Los donantes solo ven los centros que piden lo que quieren donar.</p>
+          </div>
+        </div>
+
+        <label for="nec_alimentos">
+          <svg class="ico" aria-hidden="true"><use href="#i-alimentos"></use></svg>
+          Alimentos
+        </label>
+        <input type="text" id="nec_alimentos" placeholder="arroz, atún, aceite">
+
+        <label for="nec_ropa">
+          <svg class="ico" aria-hidden="true"><use href="#i-ropa"></use></svg>
+          Ropa
+        </label>
+        <input type="text" id="nec_ropa" placeholder="medias, camisas">
+
+        <label for="nec_aseo">
+          <svg class="ico" aria-hidden="true"><use href="#i-aseo"></use></svg>
+          Aseo
+        </label>
+        <input type="text" id="nec_aseo" placeholder="jabón, papel higiénico">
+        <p class="ayuda">Escriba las cosas separadas por comas. Deje vacío lo que no necesite; si deja todo vacío, su centro no aparecerá para los donantes.</p>
+
+        <h2>Atención</h2>
+
+        <label for="horario">
+          <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg>
+          Horario de atención
+        </label>
+        <input type="text" id="horario" placeholder="Lunes a sábado, 8 a. m. a 6 p. m.">
+
+        <label for="capacidad_maxima">
+          <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+          <span>Capacidad máxima <small>(número de artículos)</small></span>
+        </label>
+        <input type="number" id="capacidad_maxima" min="1" inputmode="numeric">
+
+        <button type="submit" class="boton verde ancho" style="margin-top: 28px">
+          <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>
+          Guardar cambios
+        </button>
+      </form>
+
+      <div class="tarjeta">
+        <div class="tarjeta-titulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+          <div>
+            <h2>Ubicación</h2>
+            <p>Así aparece su centro en el mapa de donantes y conductores.</p>
+          </div>
+        </div>
+        <div id="mapa-mi-centro" style="margin-top: 16px"></div>
+      </div>
+    </section>
+
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
   <script src="/js/panel.js"></script>
 </body>
 </html>
