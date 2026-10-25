@@ -193,7 +193,7 @@ function alternarRecorrido(boton, d) {
   const abrir = caja.classList.contains("oculto");
   caja.classList.toggle("oculto", !abrir);
   boton.setAttribute("aria-expanded", abrir ? "true" : "false");
-  boton.innerHTML = icono("ruta") + (abrir ? "Ocultar recorrido" : "Ver recorrido");
+  boton.innerHTML = icono("ruta") + (abrir ? "Ocultar mapa" : "Ver recorrido");
   if (abrir && !caja.dataset.listo) {
     caja.dataset.listo = "1";
     mostrarRecorrido(caja, d);
