@@ -18,6 +18,10 @@ def _datos_basicos(datos):
 
     if nombre == "" or correo == "" or telefono == "" or ciudad == "":
         raise ErrorNegocio("Todos los campos son obligatorios.")
+        # celular colombiano: 10 numeros que empiezan por 3 (ej: 3001234567)
+    telefono = telefono.replace(" ", "")
+    if not (telefono.isdigit() and len(telefono) == 10 and telefono[0] == "3"):
+        raise ErrorNegocio("El celular debe tener 10 números y empezar por 3, por ejemplo 3001234567.")
     if datos.get("acepta_privacidad") is not True:
         raise ErrorNegocio("Debe aceptar la política de privacidad.")
     if len(clave) < 8:

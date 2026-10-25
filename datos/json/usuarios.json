@@ -90,5 +90,15 @@
     "sal": "96bc8438398fbfb7",
     "rol": "donante",
     "id": 8
+  },
+  {
+    "nombre": "juan",
+    "correo": "juan123@gmail.com",
+    "telefono": "3001112233",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "d7a56683d5c9a9ddf410b975c87c3cb51bf2489f813111a2173d4c9f0f7c77ae",
+    "sal": "b6b38fe7a9e70326",
+    "rol": "donante",
+    "id": 9
   }
 ]
