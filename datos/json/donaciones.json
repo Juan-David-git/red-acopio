@@ -73,5 +73,22 @@
     "fecha_ultimo_cambio": "2026-10-12 21:08",
     "fecha_entrega": "2026-10-12 21:08",
     "id": 5
+  },
+  {
+    "id_donante": 1,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "arroz",
+    "cantidad": 5,
+    "descripcion": "arroz de 1kl",
+    "direccion_recogida": "Calle 45 # 12-20, Bucaramanga",
+    "latitud_recogida": 7.164666,
+    "longitud_recogida": -73.119249,
+    "estado": "en camino",
+    "id_conductor": 2,
+    "fecha_publicacion": "2026-10-25 14:28",
+    "fecha_ultimo_cambio": "2026-10-25 14:37",
+    "fecha_entrega": null,
+    "id": 6
   }
 ]

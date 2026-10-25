@@ -98,6 +98,8 @@ def disponibles_para_recoger():
     lista = repo.donaciones.buscar_por("estado", "publicada")
     for d in lista:
         _agregar_detalle(d)
+        # privacidad (RNF011): el telefono solo se ve despues de aceptar
+        d.pop("donante_telefono", None)
     return lista
 
 
