@@ -19,9 +19,9 @@ def publicar(id_donante, datos):
 
     try:
         cantidad = int(datos.get("cantidad", 0))
-        id_centro = int(datos.get("id_centro", 0))
-    except ValueError:
-        raise ErrorNegocio("La cantidad debe ser un número.")
+        id_centro = int(datos.get("id_centro") or 0)
+    except (TypeError, ValueError):
+        raise ErrorNegocio("Revise la cantidad y el centro de acopio.")
 
     if categoria not in CATEGORIAS:
         raise ErrorNegocio("Seleccione una categoría.")
