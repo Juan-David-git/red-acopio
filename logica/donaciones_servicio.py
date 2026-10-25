@@ -6,6 +6,7 @@ from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.estados import ahora, estado_de
 from logica.usuarios_servicio import CATEGORIAS
+from logica.ubicacion import leer_punto
 
 
 # ======================= DONANTE =======================
@@ -30,6 +31,10 @@ def publicar(id_donante, datos):
         raise ErrorNegocio("La cantidad debe ser mayor que cero.")
     if direccion == "":
         raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+
+    # punto de recogida marcado en el mapa (opcional: si no hay internet
+    # el mapa no carga, y la donacion igual se puede publicar con la direccion)
+    latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
@@ -59,6 +64,8 @@ def publicar(id_donante, datos):
         "cantidad": cantidad,
         "descripcion": descripcion,
         "direccion_recogida": direccion,
+        "latitud_recogida": latitud,
+        "longitud_recogida": longitud,
         "estado": "publicada",
         "id_conductor": None,
         "fecha_publicacion": ahora(),
@@ -158,6 +165,9 @@ def _agregar_detalle(d):
     if centro:
         d["centro_nombre"] = centro["nombre"]
         d["centro_direccion"] = centro["direccion"] + ", " + centro["barrio"] + ", " + centro["ciudad"]
+        # para dibujar el recorrido en el mapa
+        d["centro_latitud"] = centro.get("latitud")
+        d["centro_longitud"] = centro.get("longitud")
     if donante:
         d["donante_nombre"] = donante["nombre"]
         d["donante_telefono"] = donante["telefono"]

@@ -3,6 +3,7 @@
 // (pedirApi, mostrarMensaje, limpiar, etc. estan en comun.js)
 
 let conductor = null;
+let porRecoger = [];     // lista que se ve en "Recoger" (para el boton "Ver recorrido")
 
 // ---------- al abrir la pagina ----------
 async function iniciar() {
@@ -61,7 +62,9 @@ function tarjeta(d) {
 function contactoDonante(d) {
   const numero = String(d.donante_telefono || "").replace(/\D/g, "");
   let html = dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
-  html += '</div><div class="donacion-acciones">';
+  // mapa del recorrido entre la informacion y los botones (se llena despues)
+  html += '</div><div class="donacion-mapa" data-id="' + d.id + '"></div>';
+  html += '<div class="donacion-acciones">';
   html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
   html += '<a class="boton secundario" href="https://wa.me/57' + numero + '" target="_blank" rel="noopener">' + icono("chat") + "WhatsApp</a>";
   return html;
@@ -74,6 +77,8 @@ async function cargarPorRecoger() {
   if (!r.ok) return;
   const lista = r.datos;
 
+  porRecoger = lista;
+
   if (lista.length === 0) {
     contenedor.innerHTML = '<p class="vacio">No hay donaciones esperando conductor en este momento. 🙌</p>';
     return;
@@ -84,10 +89,19 @@ async function cargarPorRecoger() {
     html += tarjeta(d);
     html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
     html += '</div><div class="donacion-acciones">';
+    // antes de aceptar puede ver que tan lejos queda
+    html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
     html += '<button class="boton" onclick="aceptar(' + d.id + ')">' + icono("camion") + "Aceptar recogida</button>";
-    html += "</div></div>";
+    html += "</div>";
+    html += '<div class="donacion-mapa oculto"></div>';
+    html += "</div>";
   });
   contenedor.innerHTML = html;
+}
+
+function verRecorrido(boton, id) {
+  const d = porRecoger.find(function (x) { return x.id === id; });
+  if (d) alternarRecorrido(boton, d);
 }
 
 async function aceptar(id) {
@@ -120,6 +134,11 @@ async function cargarEntregas() {
       html += "</div></div>";
     });
     pendientes.innerHTML = html;
+
+    // un mapa con el recorrido en cada entrega pendiente
+    datos.pendientes.forEach(function (d) {
+      mostrarRecorrido(pendientes.querySelector('.donacion-mapa[data-id="' + d.id + '"]'), d);
+    });
   }
 
   // completadas: solo informacion

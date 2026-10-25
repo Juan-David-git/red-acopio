@@ -567,6 +567,91 @@ label.check input {
   border-radius: 20px;
 }
 
+/* ---------- mapas ---------- */
+.mapa {
+  height: 260px;
+  border-radius: var(--radio-chico);
+  border: 1.5px solid var(--borde);
+  background: var(--petroleo-suave);
+  z-index: 0;              /* que los mensajes y menús queden por encima */
+}
+.mapa-elegir { height: 300px; cursor: crosshair; }
+
+.mapa-herramientas {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+}
+.mapa-herramientas .boton { min-height: 44px; padding: 8px 16px; font-size: .95rem; }
+.mapa-estado { margin: 0; font-size: .92rem; color: var(--gris); display: flex; gap: 6px; align-items: center; }
+.mapa-estado.listo { color: var(--recibida); font-weight: 700; }
+
+.mapa-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  margin: 10px 2px 12px;
+}
+.mapa-leyenda { display: flex; gap: 14px; margin: 0; font-size: .88rem; color: var(--gris); }
+.mapa-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.punto { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.punto.recogida { background: var(--naranja); }
+.punto.centro { background: var(--petroleo); }
+.mapa-distancia, .mapa-aviso {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: 700;
+  color: var(--petroleo);
+  font-size: .95rem;
+}
+.mapa-aviso { color: var(--gris); font-weight: 600; padding: 12px 0; }
+
+.donacion-mapa { grid-column: 1 / -1; margin-top: 12px; }
+
+/* pines del mapa */
+.pin { background: none; border: 0; }
+.pin-gota {
+  width: 32px;
+  height: 42px;
+  display: block;
+  filter: drop-shadow(0 3px 4px rgba(31, 57, 54, .35));
+}
+.pin-gota path { stroke: #fff; stroke-width: 2.5; }
+.pin-recogida .pin-gota path { fill: var(--naranja); }
+.pin-centro .pin-gota path { fill: var(--petroleo); }
+.pin-centroApagado .pin-gota path { fill: #8FA9A5; }
+.pin-centroApagado { opacity: .75; }
+.pin-icono {
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  width: 16px;
+  height: 16px;
+  color: #fff;
+}
+/* (se anima lo de adentro: Leaflet ya usa transform en el marcador para ubicarlo) */
+.pin-recogida svg { animation: caer .3s ease-out; }
+@keyframes caer {
+  from { transform: translateY(-14px); opacity: 0; }
+}
+
+/* ventanitas de Leaflet con la letra y colores de la página */
+.leaflet-container { font-family: var(--cuerpo); }
+/* al tocar el mapa no se pinta el borde naranja grueso; con teclado se ve un borde suave por dentro */
+.leaflet-container:focus { outline: none; }
+.leaflet-container:focus-visible { outline: none; box-shadow: inset 0 0 0 3px rgba(232, 121, 58, .55); }
+/* mapa de OpenStreetMap con colores más suaves y cálidos (no afecta pines ni rutas) */
+.leaflet-tile-pane { filter: saturate(.55) sepia(.12) brightness(1.03); }
+.leaflet-popup-content-wrapper { border-radius: var(--radio-chico); box-shadow: var(--sombra); }
+.leaflet-popup-content { margin: 10px 14px; font-weight: 700; color: var(--petroleo); }
+.leaflet-popup-content .boton { margin-top: 8px; min-height: 38px; padding: 6px 14px; font-size: .9rem; }
+
 /* ---------- pantallas más anchas ---------- */
 @media (min-width: 820px) {
   .heroe { grid-template-columns: 1.1fr 1fr; gap: 40px; padding-top: 24px; }

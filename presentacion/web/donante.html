@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Red Acopio - Donante</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <link rel="stylesheet" href="/css/estilos.css">
 </head>
 <body>
@@ -103,6 +104,20 @@
           <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
         </div>
 
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+          Marque en el mapa dónde se recoge
+        </label>
+        <p class="ayuda" style="margin: 0 0 10px">Toque el mapa en el lugar exacto. Así el conductor llega sin perderse.</p>
+        <div id="mapa-recogida" class="mapa mapa-elegir" aria-label="Mapa para marcar el punto de recogida"></div>
+        <div class="mapa-herramientas">
+          <button type="button" id="boton-ubicacion" class="boton secundario">
+            <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+            Usar mi ubicación
+          </button>
+          <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+        </div>
+
         <button type="submit" class="boton ancho" style="margin-top: 28px">
           <svg class="ico" aria-hidden="true"><use href="#i-enviar"></use></svg>
           Publicar donación
@@ -117,7 +132,9 @@
 
   </main>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
   <script src="/js/donante.js"></script>
 </body>
 </html>
