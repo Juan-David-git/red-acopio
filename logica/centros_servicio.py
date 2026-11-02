@@ -23,7 +23,30 @@ def con_ocupacion(centro):
     centro.update(inv)
     centro["libre"] = max(0, centro["capacidad_maxima"] - inv["ocupado"])
     centro["porcentaje"] = min(100, round(inv["ocupado"] * 100 / centro["capacidad_maxima"])) if centro["capacidad_maxima"] else 100
+    centro["alerta_capacidad"] = _revisar_alerta(centro)
     return centro
+
+
+ALERTA_SE_ENCIENDE = 80   # CU-13: a partir de 80 % se avisa al encargado
+ALERTA_SE_APAGA = 70      # y el aviso se quita cuando baja de 70 % (asi no prende y apaga a cada rato)
+
+
+def _revisar_alerta(centro):
+    encendida = centro.get("alerta_capacidad", False)
+    nueva = encendida
+    if not encendida and centro["porcentaje"] >= ALERTA_SE_ENCIENDE:
+        nueva = True
+    elif encendida and centro["porcentaje"] < ALERTA_SE_APAGA:
+        nueva = False
+    if nueva != encendida:
+        # se guarda solo la marca (se lee de nuevo para no guardar los numeros del inventario)
+        with repo.candado:
+            guardado = repo.centros.buscar_por_id(centro["id"])
+            if guardado is not None:
+                guardado["alerta_capacidad"] = nueva
+                guardado["fecha_alerta"] = ahora() if nueva else None
+                repo.centros.actualizar(guardado)
+    return nueva
 
 
 def resumen(id_gestor):
@@ -37,6 +60,7 @@ def listar_publico():
     for c in repo.centros.listar():
         c = con_ocupacion(c)
         c.pop("id_gestor", None)   # no hace falta mostrar quien es el encargado
+        c.pop("fecha_alerta", None)
         lista.append(c)
     return lista
 
@@ -88,8 +112,13 @@ def donaciones(id_gestor):
     return donaciones_servicio.donaciones_del_centro(centro["id"])
 
 
-def confirmar_recepcion(id_gestor, id_donacion):
-    return donaciones_servicio.confirmar_recepcion(id_gestor, id_donacion)
+def confirmar_recepcion(id_gestor, id_donacion, datos=None):
+    return donaciones_servicio.confirmar_recepcion(id_gestor, id_donacion, datos)
+
+
+def zona(id_gestor):
+    # CU-07: lo que se esta publicando cerca (aunque vaya para otro centro)
+    return donaciones_servicio.publicadas_de_la_zona(centro_del_gestor(id_gestor))
 
 
 def actualizar(id_gestor, datos):
