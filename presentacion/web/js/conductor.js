@@ -13,13 +13,14 @@ async function iniciar() {
 
   // revisar que haya sesion y que sea conductor
   if (conductor.rol !== "conductor") {
-    window.location.href = "/login.html";
+    irAMiPanel(conductor.rol);
     return;
   }
   document.getElementById("nombre-usuario").textContent = conductor.nombre;
   iniciarZona();
 
   cargarPorRecoger();
+  return true;
 }
 
 // ---------- pestañas ----------
@@ -341,6 +342,8 @@ async function revisarCambios() {
 }
 
 activarBotonSalir();
-iniciar();
-revisarCambios();                       // primera foto de como estan
-revisarCadaCierto(revisarCambios, 20000);
+iniciar().then(function (listo) {
+  if (!listo) return;                      // no era conductor: ya se fue a su panel
+  revisarCambios();                        // primera foto de como estan
+  revisarCadaCierto(revisarCambios, 20000);
+});

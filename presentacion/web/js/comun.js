@@ -42,6 +42,14 @@ function enviarJson(url, cuerpo) {
   });
 }
 
+// ---------- a que panel va cada rol ----------
+const PANEL_DE_ROL = { donante: "/donante.html", conductor: "/conductor.html", gestor: "/panel.html" };
+
+// si entro a un panel que no es el suyo, lo lleva al suyo (o al login si no tiene sesion)
+function irAMiPanel(rol) {
+  window.location.href = PANEL_DE_ROL[rol] || "/login.html";
+}
+
 // ---------- mensajes en pantalla ----------
 function mostrarMensaje(texto, tipo) {
   const caja = document.getElementById("mensaje");
@@ -62,6 +70,7 @@ function etiquetaEstado(estado) {
   const info = {
     "publicada": ["Publicada", "reloj"],
     "en camino": ["En camino", "camion"],
+    "por llevar": ["Por llevar", "usuario"],
     "recibida": ["Recibida", "check"],
     "cancelada": ["Cancelada", "equis"]
   };

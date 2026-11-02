@@ -6,7 +6,6 @@ let filtro = "";
 let mapa = null;
 let marcadores = {};   // id del centro -> marcador
 
-const PANELES = { donante: "/donante.html", conductor: "/conductor.html", gestor: "/panel.html" };
 const ICONOS_CATEGORIA = { Alimentos: "alimentos", Ropa: "ropa", Aseo: "aseo" };
 
 async function iniciar() {
@@ -14,7 +13,7 @@ async function iniciar() {
   const s = await pedirApi("/api/sesion");
   if (s.ok && s.datos.rol) {
     const enlace = document.getElementById("enlace-cuenta");
-    enlace.href = PANELES[s.datos.rol] || "/";
+    enlace.href = PANEL_DE_ROL[s.datos.rol] || "/";
     enlace.innerHTML = icono("casa") + "<span>Mi panel</span>";
   }
 

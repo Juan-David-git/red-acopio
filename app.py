@@ -1,4 +1,5 @@
 import os
+import traceback
 import json
 import webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -129,6 +130,13 @@ class Manejador(BaseHTTPRequestHandler):
 
         except ErrorNegocio as e:
             self.responder_json(400, {"error": str(e)})
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- POST: el navegador envia datos ----------
     def do_POST(self):
@@ -171,8 +179,12 @@ class Manejador(BaseHTTPRequestHandler):
             elif ruta == "/api/donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
-                    donaciones_servicio.publicar(usuario["id"], datos)
-                    self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
+                    donacion = donaciones_servicio.publicar(usuario["id"], datos)
+                    if donacion["modalidad"] == "personal":
+                        mensaje = "¡Listo! El centro ya sabe que usted le llevará la donación. Cuando la entregue, ellos la confirman."
+                    else:
+                        mensaje = "¡Su donación fue publicada! Un conductor la recogerá pronto."
+                    self.responder_json(201, {"mensaje": mensaje})
 
             # ----- perfil -----
             elif ruta == "/api/perfil":
@@ -252,6 +264,13 @@ class Manejador(BaseHTTPRequestHandler):
 
         except ErrorNegocio as e:
             self.responder_json(400, {"error": str(e)})
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- ayudas ----------
     def servir_archivo(self, ruta):
@@ -276,6 +295,10 @@ class Manejador(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header("Content-Type", tipo)
+        # que el navegador pregunte siempre por la version nueva (si no, despues de
+        # cambiar un .js o .css puede seguir usando el viejo guardado en cache)
+        if extension in (".html", ".css", ".js"):
+            self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(contenido)
 
@@ -336,5 +359,6 @@ class Manejador(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
     print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+    print("Ojo: si cambia archivos .py, detenga el servidor y vuelva a ejecutar python app.py")
     webbrowser.open("http://localhost:8000")
     servidor.serve_forever()

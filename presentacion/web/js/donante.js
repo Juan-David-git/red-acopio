@@ -16,7 +16,7 @@ async function iniciar() {
   if (!r.ok) return;
   const usuario = r.datos;
   if (usuario.rol !== "donante") {
-    window.location.href = "/login.html";
+    irAMiPanel(usuario.rol);
     return;
   }
   document.getElementById("nombre-usuario").textContent = usuario.nombre;
@@ -26,6 +26,7 @@ async function iniciar() {
   if (rc.ok) centros = rc.datos;
 
   iniciarMapaDonar();
+  return true;
 }
 
 // ---------- pestañas ----------
@@ -170,6 +171,53 @@ function escogerCentro(id) {
   mapaDonar.closePopup();
 }
 
+// ---------- ¿la recogen o la lleva usted? ----------
+const botonesModalidad = document.querySelectorAll(".modalidad");
+
+botonesModalidad.forEach(function (boton) {
+  boton.addEventListener("click", function () {
+    elegirModalidad(boton.dataset.modalidad);
+  });
+});
+
+function elegirModalidad(modalidad) {
+  document.getElementById("modalidad").value = modalidad;
+  botonesModalidad.forEach(function (b) {
+    const escogido = b.dataset.modalidad === modalidad;
+    b.classList.toggle("activa", escogido);
+    b.setAttribute("aria-checked", escogido ? "true" : "false");
+  });
+  const personal = modalidad === "personal";
+  document.getElementById("bloque-recogida").classList.toggle("oculto", personal);
+  document.getElementById("bloque-personal").classList.toggle("oculto", !personal);
+  if (personal) {
+    pintarInfoCentro();
+  } else if (mapaDonar) {
+    mapaDonar.invalidateSize();   // el mapa estuvo escondido: que vuelva a medir su tamaño
+  }
+}
+
+// direccion y horario del centro escogido, para el que la lleva personalmente
+function pintarInfoCentro() {
+  const caja = document.getElementById("info-centro-personal");
+  const id = document.getElementById("id_centro").value;
+  const c = centros.find(function (x) { return String(x.id) === id; });
+  if (!c) {
+    caja.innerHTML = '<p class="ayuda">Escoja primero el centro de acopio para ver su dirección y horario.</p>';
+    return;
+  }
+  let html = "<strong>Llévela a " + limpiar(c.nombre) + "</strong>";
+  html += dato("pin", limpiar(c.direccion) + ", " + limpiar(c.barrio) + ", " + limpiar(c.ciudad));
+  html += dato("reloj", "Horario: " + limpiar(c.horario));
+  if (c.latitud != null) {
+    html += '<a class="boton secundario" href="' + enlaceComoLlegar([c.latitud, c.longitud]) +
+      '" target="_blank" rel="noopener">' + icono("ruta") + "Cómo llegar</a>";
+  }
+  caja.innerHTML = html;
+}
+
+document.getElementById("id_centro").addEventListener("change", pintarInfoCentro);
+
 // ---------- publicar ----------
 document.getElementById("form-donacion").addEventListener("submit", async function (evento) {
   evento.preventDefault();
@@ -181,7 +229,7 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
     articulo: document.getElementById("articulo").value,
     cantidad: document.getElementById("cantidad").value,
     descripcion: document.getElementById("descripcion").value,
-    direccion_recogida: document.getElementById("direccion_recogida").value
+    modalidad: document.getElementById("modalidad").value
   };
 
   if (datos.categoria === "" || datos.id_centro === "") {
@@ -189,15 +237,21 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
     return;
   }
 
-  // si el mapa cargo, el punto es obligatorio
-  const punto = selectorRecogida ? selectorRecogida.punto() : null;
-  if (selectorRecogida && !punto) {
-    mostrarMensaje("Toque el mapa para marcar dónde se recoge la donación.", "error");
-    return;
-  }
-  if (punto) {
-    datos.latitud_recogida = punto[0];
-    datos.longitud_recogida = punto[1];
+  if (datos.modalidad === "personal") {
+    // la lleva usted: no hace falta direccion ni mapa
+    datos.cuando_llevara = document.getElementById("cuando_llevara").value;
+  } else {
+    datos.direccion_recogida = document.getElementById("direccion_recogida").value;
+    // si el mapa cargo, el punto es obligatorio
+    const punto = selectorRecogida ? selectorRecogida.punto() : null;
+    if (selectorRecogida && !punto) {
+      mostrarMensaje("Toque el mapa para marcar dónde se recoge la donación.", "error");
+      return;
+    }
+    if (punto) {
+      datos.latitud_recogida = punto[0];
+      datos.longitud_recogida = punto[1];
+    }
   }
 
   const r = await enviarJson("/api/donaciones", datos);
@@ -205,6 +259,7 @@ document.getElementById("form-donacion").addEventListener("submit", async functi
     mostrarMensaje(r.datos.mensaje, "exito");
     formulario.reset();
     elegirCategoria("");
+    elegirModalidad("recogida");
     if (selectorRecogida) selectorRecogida.quitar();
   }
 });
@@ -238,12 +293,30 @@ async function cargarDonaciones() {
     if (d.descripcion) {
       html += dato("nota", limpiar(d.descripcion));
     }
-    html += dato("centro", "Va para: <strong>" + limpiar(d.centro_nombre) + "</strong>");
+    const personal = d.modalidad === "personal";
+    if (d.estado === "por llevar") {
+      // la lleva usted: a donde y cuando
+      html += dato("centro", "Llévela a: <strong>" + limpiar(d.centro_nombre) + "</strong> — " + limpiar(d.centro_direccion));
+      if (d.centro_horario) html += dato("reloj", "Horario: " + limpiar(d.centro_horario));
+      if (d.cuando_llevara) html += dato("calendario", "Usted dijo: " + limpiar(d.cuando_llevara));
+    } else {
+      html += dato("centro", "Va para: <strong>" + limpiar(d.centro_nombre) + "</strong>" + (personal ? " (la llevó usted)" : ""));
+    }
     html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
     if (d.estado === "recibida") {
       html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
     }
     html += "</div>";
+
+    if (d.estado === "por llevar") {
+      html += '<div class="donacion-acciones">';
+      if (d.centro_latitud != null) {
+        html += '<a class="boton secundario" href="' + enlaceComoLlegar([d.centro_latitud, d.centro_longitud]) +
+          '" target="_blank" rel="noopener">' + icono("ruta") + "Cómo llegar</a>";
+      }
+      html += '<button class="boton peligro" onclick="cancelar(' + d.id + ')">' + icono("basura") + "Cancelar donación</button>";
+      html += "</div>";
+    }
 
     // mientras no se ha entregado, puede ver el recorrido planeado hasta el centro
     const activa = d.estado === "publicada" || d.estado === "en camino";
@@ -316,6 +389,8 @@ async function revisarDonaciones() {
 }
 
 activarBotonSalir();
-iniciar();
-revisarDonaciones();                       // primera foto de como estan
-revisarCadaCierto(revisarDonaciones, 20000);
+iniciar().then(function (listo) {
+  if (!listo) return;                      // no era donante: ya se fue a su panel
+  revisarDonaciones();                     // primera foto de como estan
+  revisarCadaCierto(revisarDonaciones, 20000);
+});

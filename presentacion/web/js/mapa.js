@@ -126,6 +126,11 @@ function enlaceGoogleMaps(origen, destino) {
     "&destination=" + destino[0] + "," + destino[1];
 }
 
+// Google Maps con la ruta desde donde este la persona hasta el destino (no necesita clave)
+function enlaceComoLlegar(destino) {
+  return "https://www.google.com/maps/dir/?api=1&destination=" + destino[0] + "," + destino[1];
+}
+
 function puntoRecogida(d) {
   if (d.latitud_recogida == null || d.longitud_recogida == null) return null;
   return [d.latitud_recogida, d.longitud_recogida];

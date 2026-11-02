@@ -1,3 +1,5 @@
+import re
+
 from datos import repositorio_json as repo
 from logica import seguridad
 from logica.errores import ErrorNegocio
@@ -26,6 +28,9 @@ def _datos_basicos(datos):
 
     if nombre == "" or correo == "" or telefono == "" or ciudad == "":
         raise ErrorNegocio("Todos los campos son obligatorios.")
+    # correo con forma de correo: algo@algo.algo
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", correo):
+        raise ErrorNegocio("Escriba un correo válido, por ejemplo nombre@correo.com.")
     telefono = validar_celular(telefono)
     if datos.get("acepta_privacidad") is not True:
         raise ErrorNegocio("Debe aceptar la política de privacidad.")

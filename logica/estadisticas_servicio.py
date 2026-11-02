@@ -70,7 +70,7 @@ def del_donante(id_donante):
     centros = _centros_por_id()
 
     entregadas = [d for d in mias if d["estado"] == "recibida"]
-    en_curso = [d for d in mias if d["estado"] in ("publicada", "en camino")]
+    en_curso = [d for d in mias if d["estado"] in ("publicada", "en camino", "por llevar")]
     canceladas = [d for d in mias if d["estado"] == "cancelada"]
 
     # a donde ha donado (solo lo que llego)

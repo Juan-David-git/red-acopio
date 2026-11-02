@@ -11,13 +11,14 @@ async function iniciar() {
   const r = await pedirApi("/api/sesion");
   if (!r.ok) return;
   if (r.datos.rol !== "gestor") {
-    window.location.href = "/login.html";
+    irAMiPanel(r.datos.rol);
     return;
   }
   document.getElementById("nombre-usuario").textContent = r.datos.nombre;
 
   await cargarCentro();
   cargarDonaciones();
+  return true;
 }
 
 // ---------- pestañas ----------
@@ -92,7 +93,15 @@ function tarjeta(d) {
   if (d.descripcion) {
     html += dato("nota", limpiar(d.descripcion));
   }
-  html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  if (d.modalidad === "personal") {
+    // la trae el donante personalmente
+    html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre) + " — la trae personalmente");
+    if (d.estado === "por llevar" && d.cuando_llevara) {
+      html += dato("reloj", "Dijo que vendría: " + limpiar(d.cuando_llevara));
+    }
+  } else {
+    html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  }
   if (d.conductor_nombre) {
     html += dato("vehiculo", "<strong>Conductor:</strong> " + limpiar(d.conductor_nombre) +
       (d.conductor_vehiculo ? " (" + limpiar(d.conductor_vehiculo) + ")" : ""));
@@ -115,8 +124,9 @@ async function cargarDonaciones() {
   document.getElementById("cifra-llegar").textContent = porLlegar.length;
 
   // por llegar: primero las que ya vienen en camino
+  // primero lo que ya viene (en camino o lo trae el donante), despues lo que espera conductor
   porLlegar.sort(function (a, b) {
-    return (a.estado === "en camino" ? 0 : 1) - (b.estado === "en camino" ? 0 : 1);
+    return (a.estado === "publicada" ? 1 : 0) - (b.estado === "publicada" ? 1 : 0);
   });
 
   const llegar = document.getElementById("lista-llegar");
@@ -129,12 +139,20 @@ async function cargarDonaciones() {
       html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
       html += "</div>";
       html += '<div class="donacion-acciones">';
-      html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
-      if (d.conductor_telefono) {
-        const numero = String(d.conductor_telefono).replace(/\D/g, "");
-        html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+      if (d.modalidad === "personal") {
+        // no hay recorrido: el donante llega por su cuenta. Se le puede llamar.
+        if (d.donante_telefono) {
+          const numero = String(d.donante_telefono).replace(/\D/g, "");
+          html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar al donante</a>";
+        }
+      } else {
+        html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
+        if (d.conductor_telefono) {
+          const numero = String(d.conductor_telefono).replace(/\D/g, "");
+          html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+        }
       }
-      if (d.estado === "en camino") {
+      if (d.estado === "en camino" || d.estado === "por llevar") {
         html += '<button class="boton verde" onclick="recibir(' + d.id + ')">' + icono("check") + "Confirmar recibido</button>";
       }
       html += "</div>";
@@ -316,7 +334,8 @@ async function revisarLlegadas() {
       const ver = { texto: "Ver", alTocar: function () { abrirPestana("seccion-llegar"); } };
       if (!antes) {
         huboCambio = true;
-        mostrarAviso("Nueva donación para su centro: " + que + ".", "caja", ver);
+        mostrarAviso("Nueva donación para su centro: " + que +
+          (d.modalidad === "personal" ? ". La trae el donante personalmente." : "."), "caja", ver);
       } else if (antes !== d.estado) {
         huboCambio = true;
         if (d.estado === "en camino") {
@@ -342,6 +361,8 @@ async function revisarLlegadas() {
 }
 
 activarBotonSalir();
-iniciar();
-revisarLlegadas();                       // primera foto de como estan
-revisarCadaCierto(revisarLlegadas, 20000);
+iniciar().then(function (listo) {
+  if (!listo) return;                      // no era encargado de centro: ya se fue a su panel
+  revisarLlegadas();                       // primera foto de como estan
+  revisarCadaCierto(revisarLlegadas, 20000);
+});

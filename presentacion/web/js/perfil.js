@@ -1,18 +1,24 @@
 // Mi perfil: datos personales, contraseña y (conductor) vehiculo y zona en el mapa.
 // (pedirApi, enviarJson, mostrarMensaje... en comun.js; crearMapa, selectorDePunto en mapa.js)
 
-const PANELES = { donante: "/donante.html", conductor: "/conductor.html", gestor: "/panel.html" };
 const ROLES = { donante: "Donante", conductor: "Conductor voluntario", gestor: "Encargado de centro de acopio" };
 
 let perfil = null;
 let selectorZona = null;
 
 async function iniciar() {
+  // sin sesion: directo al login (sin ventanita de "sesion termino")
+  const s = await pedirApi("/api/sesion");
+  if (!s.ok) return;
+  if (!s.datos.rol) {
+    window.location.href = "/login.html";
+    return;
+  }
   const r = await pedirApi("/api/perfil");
   if (!r.ok) return;
   perfil = r.datos;
 
-  document.getElementById("volver-panel").href = PANELES[perfil.rol] || "/";
+  document.getElementById("volver-panel").href = PANEL_DE_ROL[perfil.rol] || "/";
   pintarCabeza();
   llenarFormulario();
 
