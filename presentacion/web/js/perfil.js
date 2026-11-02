@@ -26,6 +26,10 @@ async function iniciar() {
     document.getElementById("campos-conductor").classList.remove("oculto");
     iniciarMapaZona();
   }
+  if (perfil.rol === "donante") {
+    document.getElementById("campos-donante").classList.remove("oculto");
+    iniciarMapaCasa();
+  }
 }
 
 function pintarCabeza() {
@@ -38,8 +42,13 @@ function llenarFormulario() {
   document.getElementById("telefono").value = perfil.telefono;
   document.getElementById("ciudad").value = perfil.ciudad;
   document.getElementById("correo").value = perfil.correo;
+  if (perfil.rol === "donante") {
+    document.getElementById("direccion").value = perfil.direccion || "";
+  }
   if (perfil.rol === "conductor") {
     document.getElementById("tipo_vehiculo").value = perfil.tipo_vehiculo || "moto";
+    document.getElementById("placa").value = perfil.placa || "";
+    document.getElementById("capacidad_kg").value = perfil.capacidad_kg || "";
     document.getElementById("zona").value = perfil.zona || "";
     document.getElementById("radio_km").value = String(perfil.radio_km || 5);
   }
@@ -69,6 +78,28 @@ function iniciarMapaZona() {
   }
 }
 
+// ---------- mapa de la casa del donante ----------
+let selectorCasa = null;
+
+function iniciarMapaCasa() {
+  if (!mapaDisponible()) {
+    document.getElementById("ubicacion-casa").innerHTML = '<p class="mapa-aviso">' + icono("info") +
+      "No se pudo cargar el mapa. Revise su conexión a internet.</p>";
+    return;
+  }
+  const mapa = crearMapa(document.getElementById("mapa-casa"));
+  selectorCasa = selectorDePunto(mapa, {
+    tipo: "recogida",
+    estado: document.getElementById("estado-casa"),
+    botonUbicacion: document.getElementById("boton-ubicacion-casa")
+  });
+  if (perfil.direccion_latitud != null && perfil.direccion_longitud != null) {
+    const punto = [perfil.direccion_latitud, perfil.direccion_longitud];
+    selectorCasa.marcar(punto);
+    mapa.setView(punto, 16);
+  }
+}
+
 // ---------- guardar datos ----------
 document.getElementById("form-perfil").addEventListener("submit", async function (evento) {
   evento.preventDefault();
@@ -77,8 +108,16 @@ document.getElementById("form-perfil").addEventListener("submit", async function
     telefono: document.getElementById("telefono").value,
     ciudad: document.getElementById("ciudad").value
   };
+  if (perfil.rol === "donante") {
+    datos.direccion = document.getElementById("direccion").value;
+    const punto = selectorCasa ? selectorCasa.punto() : null;
+    datos.direccion_latitud = selectorCasa ? (punto ? punto[0] : null) : perfil.direccion_latitud;
+    datos.direccion_longitud = selectorCasa ? (punto ? punto[1] : null) : perfil.direccion_longitud;
+  }
   if (perfil.rol === "conductor") {
     datos.tipo_vehiculo = document.getElementById("tipo_vehiculo").value;
+    datos.placa = document.getElementById("placa").value;
+    datos.capacidad_kg = document.getElementById("capacidad_kg").value;
     datos.zona = document.getElementById("zona").value;
     datos.radio_km = document.getElementById("radio_km").value;
     const punto = selectorZona ? selectorZona.punto() : null;

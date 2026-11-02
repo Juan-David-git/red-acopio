@@ -76,6 +76,29 @@
       <input type="email" id="correo" disabled>
       <p class="ayuda">El correo es su usuario para entrar y no se puede cambiar.</p>
 
+      <!-- ===== solo donante: su direccion de siempre ===== -->
+      <div id="campos-donante" class="oculto">
+        <h2>Mi dirección</h2>
+        <p class="ayuda" style="margin: 0 0 4px">Si la guarda, al donar puede usarla con un solo toque.</p>
+
+        <label for="direccion">
+          <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+          Dirección donde suelen recoger
+        </label>
+        <input type="text" id="direccion" maxlength="120" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
+
+        <div id="ubicacion-casa">
+          <div id="mapa-casa" class="mapa mapa-elegir" style="margin-top: 12px" aria-label="Mapa para marcar su casa"></div>
+          <div class="mapa-herramientas">
+            <button type="button" id="boton-ubicacion-casa" class="boton secundario">
+              <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+              Usar mi ubicación
+            </button>
+            <p id="estado-casa" class="mapa-estado">Todavía no ha marcado el punto.</p>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== solo conductor ===== -->
       <div id="campos-conductor" class="oculto">
         <h2>Mi vehículo y mi zona</h2>
@@ -89,6 +112,23 @@
           <option value="carro">Carro</option>
           <option value="camioneta">Camioneta</option>
         </select>
+
+        <div class="fila">
+          <div>
+            <label for="placa">
+              <svg class="ico" aria-hidden="true"><use href="#i-etiqueta"></use></svg>
+              Placa
+            </label>
+            <input type="text" id="placa" maxlength="7" placeholder="ABC123" autocapitalize="characters">
+          </div>
+          <div>
+            <label for="capacidad_kg">
+              <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+              Carga <small>(kg)</small>
+            </label>
+            <input type="number" id="capacidad_kg" min="1" max="5000" inputmode="numeric">
+          </div>
+        </div>
 
         <label for="zona">
           <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>

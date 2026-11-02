@@ -10,6 +10,13 @@ const paneles = {
   gestor: "/panel.html"
 };
 
+// si viene del registro con un correo que ya existe, se escribe solo
+const correoSugerido = new URLSearchParams(window.location.search).get("correo");
+if (correoSugerido) {
+  document.getElementById("correo").value = correoSugerido;
+  document.getElementById("clave").focus();
+}
+
 formulario.addEventListener("submit", async function (evento) {
   evento.preventDefault();
 

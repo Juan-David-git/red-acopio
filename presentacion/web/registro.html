@@ -159,11 +159,43 @@
             <option value="camioneta">Camioneta</option>
           </select>
 
+          <div class="fila">
+            <div>
+              <label for="placa">
+                <svg class="ico" aria-hidden="true"><use href="#i-etiqueta"></use></svg>
+                Placa
+              </label>
+              <input type="text" id="placa" maxlength="7" placeholder="ABC123" autocapitalize="characters">
+            </div>
+            <div>
+              <label for="capacidad_kg">
+                <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+                Carga <small>(kg)</small>
+              </label>
+              <input type="number" id="capacidad_kg" min="1" max="5000" inputmode="numeric" placeholder="Ej: 50">
+            </div>
+          </div>
+          <p class="ayuda">Placa de carro o camioneta: ABC123. De moto: ABC12D.</p>
+
           <label for="zona">
             <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
             Zona donde puede recoger
           </label>
           <input type="text" id="zona" placeholder="Ej: Norte, Centro, Cabecera">
+
+          <label>
+            <svg class="ico" aria-hidden="true"><use href="#i-calendario"></use></svg>
+            ¿Qué días puede recoger?
+          </label>
+          <div class="dias" id="dias">
+            <label class="dia"><input type="checkbox" name="dia" value="lunes"> Lun</label>
+            <label class="dia"><input type="checkbox" name="dia" value="martes"> Mar</label>
+            <label class="dia"><input type="checkbox" name="dia" value="miércoles"> Mié</label>
+            <label class="dia"><input type="checkbox" name="dia" value="jueves"> Jue</label>
+            <label class="dia"><input type="checkbox" name="dia" value="viernes"> Vie</label>
+            <label class="dia"><input type="checkbox" name="dia" value="sábado"> Sáb</label>
+            <label class="dia"><input type="checkbox" name="dia" value="domingo"> Dom</label>
+          </div>
 
           <label>
             <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg>
@@ -172,6 +204,7 @@
           <label class="check"><input type="checkbox" name="franja" value="mañana"> Mañana (6 a. m. a 12 m.)</label>
           <label class="check"><input type="checkbox" name="franja" value="tarde"> Tarde (12 m. a 6 p. m.)</label>
           <label class="check"><input type="checkbox" name="franja" value="noche"> Noche (6 p. m. a 9 p. m.)</label>
+          <p class="ayuda">Si no marca días u horarios, queda «sin disponibilidad» hasta que los marque en «Horarios».</p>
         </div>
 
         <!-- ===== solo centro de acopio ===== -->
