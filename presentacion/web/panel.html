@@ -65,12 +65,24 @@
           <div id="ocupacion-relleno"></div>
         </div>
       </div>
+
+      <!-- CU-13: aviso cuando el centro pasa del 80 % (se quita cuando baja del 70 %) -->
+      <div id="alerta-capacidad" class="alerta-capacidad oculto" role="status">
+        <svg class="ico" aria-hidden="true"><use href="#i-info"></use></svg>
+        <div>
+          <strong>Su centro está casi lleno.</strong>
+          <span id="alerta-texto"></span>
+        </div>
+      </div>
     </section>
 
     <!-- pestañas -->
     <div class="pestanas">
       <button type="button" class="activa" data-seccion="seccion-llegar">
         <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg> Por llegar
+      </button>
+      <button type="button" data-seccion="seccion-zona">
+        <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg> En la zona
       </button>
       <button type="button" data-seccion="seccion-bodega">
         <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Bodega
@@ -89,6 +101,30 @@
     <section id="seccion-llegar">
       <p class="subtitulo">Donaciones que vienen para su centro. Cuando el conductor llegue, toque «Confirmar recibido».</p>
       <div id="lista-llegar"></div>
+    </section>
+
+    <!-- ===== EN LA ZONA (CU-07): lo que se esta publicando cerca ===== -->
+    <section id="seccion-zona" class="oculto">
+      <p class="subtitulo">Donaciones publicadas cerca de su centro que todavía esperan conductor, la más cercana primero.</p>
+      <div class="filtros-zona">
+        <div class="campo-icono">
+          <svg class="ico" aria-hidden="true"><use href="#i-lista"></use></svg>
+          <input type="search" id="buscar-zona" placeholder="Buscar por artículo o barrio" aria-label="Buscar por artículo o barrio">
+        </div>
+        <select id="categoria-zona" aria-label="Categoría">
+          <option value="">Todas las categorías</option>
+          <option>Alimentos</option>
+          <option>Ropa</option>
+          <option>Aseo</option>
+        </select>
+        <select id="distancia-zona" aria-label="Distancia">
+          <option value="2">A menos de 2 km</option>
+          <option value="5" selected>A menos de 5 km</option>
+          <option value="10">A menos de 10 km</option>
+          <option value="">A cualquier distancia</option>
+        </select>
+      </div>
+      <div id="lista-zona"></div>
     </section>
 
     <!-- ===== RECIBIDAS ===== -->

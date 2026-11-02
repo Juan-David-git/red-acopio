@@ -726,6 +726,31 @@ label.check input {
 .info-centro > strong { color: var(--petroleo); font-family: var(--titulos); }
 .info-centro .boton { margin-top: 12px; min-height: 44px; padding: 8px 16px; font-size: .95rem; }
 
+/* ---------- campos con error y enlace de ayuda en los mensajes ---------- */
+.campo-error,
+input.campo-error, select.campo-error, textarea.campo-error {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 4px rgba(179, 38, 30, .14) !important;
+}
+label.campo-error { background: var(--error-fondo); }
+.mapa.campo-error { outline: 3px solid var(--error); outline-offset: 2px; }
+.mensaje-accion { color: inherit; text-decoration: underline; font-weight: 800; white-space: nowrap; }
+
+/* días de la semana del conductor */
+.dias { display: flex; flex-wrap: wrap; gap: 8px; }
+.dia {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1.5px solid var(--borde);
+  border-radius: 999px;
+  background: #fff;
+  font-weight: 700;
+  color: var(--texto);
+  cursor: pointer;
+}
+.dia:has(input:checked) { border-color: var(--petroleo); background: var(--petroleo-suave); color: var(--petroleo); }
+.dia input { width: 18px; height: 18px; min-height: 0; margin: 0; accent-color: var(--petroleo); }
+
 /* ---------- avisos automáticos ---------- */
 .avisos {
   position: fixed;
@@ -1089,3 +1114,110 @@ input::-ms-reveal { display: none; }
     color: #F2A15F;
   }
 }
+
+/* ---------- CU-04: varios artículos en una donación ---------- */
+.articulos-form { display: grid; gap: 12px; margin-bottom: 12px; container-type: inline-size; }
+.articulo-fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: #fff;
+}
+.articulo-fila .a-cabeza { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; min-height: 0; }
+.articulo-fila .a-cabeza:has(.a-numero:empty):has(.a-quitar.oculto) { display: none; }
+.articulo-fila .a-numero { color: var(--petroleo); font: 700 .95rem var(--titulos); }
+.articulo-fila .a-campo { display: grid; gap: 6px; margin: 0; min-width: 0; }
+.articulo-fila .a-campo > span { font-size: .9rem; font-weight: 700; color: var(--texto); }
+.articulo-fila .a-campo-nombre, .articulo-fila .a-vence { grid-column: 1 / -1; }
+.articulo-fila input, .articulo-fila select { margin: 0; width: 100%; min-width: 0; }
+.articulo-fila .a-quitar {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto; min-height: 36px; padding: 4px 12px;
+  border: 1.5px solid var(--borde); border-radius: 999px;
+  background: #fff; color: var(--cancelada); font: 700 .88rem var(--cuerpo); cursor: pointer;
+}
+.articulo-fila .a-quitar:hover { border-color: var(--cancelada); background: var(--cancelada-fondo); }
+/* si el formulario es ancho: cantidad, unidad y vencimiento en una sola linea */
+@container (min-width: 460px) {
+  .articulo-fila { grid-template-columns: 1fr 1.25fr 1.4fr; }
+  .articulo-fila .a-vence { grid-column: auto; }
+}
+#boton-mi-direccion { margin-top: 10px; }
+
+ul.articulos { margin: 4px 0 8px; padding-left: 20px; color: var(--texto); }
+ul.articulos li { margin: 2px 0; }
+ul.articulos small { color: var(--gris); }
+
+/* ---------- CU-06: filtro por estado e historial ---------- */
+.filtros { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 16px; }
+.filtro {
+  min-height: 40px; padding: 6px 14px;
+  border: 1.5px solid var(--borde); border-radius: 999px;
+  background: #fff; color: var(--petroleo);
+  font: 700 .92rem var(--cuerpo); cursor: pointer;
+}
+.filtro span { display: inline-block; min-width: 22px; padding: 0 6px; margin-left: 4px; border-radius: 999px; background: var(--petroleo-suave); font-size: .8rem; }
+.filtro.activa { background: var(--petroleo); border-color: var(--petroleo); color: #fff; }
+.filtro.activa span { background: rgba(255, 255, 255, .2); }
+
+.donacion-historial { margin: 6px 0 4px; }
+.donacion-historial summary {
+  display: inline-flex; align-items: center; gap: 6px;
+  cursor: pointer; color: var(--petroleo); font-weight: 700; font-size: .92rem;
+}
+ol.historial { list-style: none; margin: 10px 0 0; padding: 0 0 0 6px; }
+ol.historial li {
+  position: relative; display: grid; gap: 2px;
+  padding: 0 0 12px 20px; border-left: 2px solid var(--borde);
+}
+ol.historial li:last-child { border-left-color: transparent; padding-bottom: 0; }
+ol.historial li::before {
+  content: ""; position: absolute; left: -7px; top: 3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--publicada); border: 2px solid #fff;
+}
+ol.historial li.h-en-camino::before { background: var(--encamino); }
+ol.historial li.h-recibida::before { background: var(--recibida); }
+ol.historial li.h-cancelada::before { background: var(--cancelada); }
+ol.historial li.h-por-llevar::before { background: var(--petroleo); }
+ol.historial small { color: var(--gris); }
+
+.vacio .ico { width: 34px; height: 34px; color: var(--gris-claro); }
+.vacio .boton { margin-top: 12px; }
+
+/* ---------- CU-05 y CU-09: formularios dentro de la tarjeta ---------- */
+.cancelar-form, .entrega-form {
+  display: grid; gap: 8px;
+  margin-top: 12px; padding: 14px;
+  border-radius: var(--radio-chico);
+  background: var(--crema);
+  border: 1.5px solid var(--borde);
+}
+.cancelar-form { border-color: var(--cancelada-fondo); background: #fff8f7; }
+.cancelar-form.oculto, .entrega-form.oculto { display: none; }
+.cancelar-form label, .entrega-form label { margin: 0; }
+.cancelar-form .donacion-acciones, .entrega-form .donacion-acciones { margin-top: 4px; }
+
+/* ---------- CU-13: alerta de capacidad ---------- */
+.alerta-capacidad {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-top: 16px; padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--publicada-fondo); color: var(--publicada);
+  border: 1.5px solid #F2D29A;
+}
+.alerta-capacidad.oculto { display: none; }
+.alerta-capacidad .ico { flex: none; margin-top: 2px; }
+.alerta-capacidad span { color: var(--texto); }
+
+/* ---------- CU-07 (zona del centro) y CU-11 (buscar centros) ---------- */
+.filtros-zona, .buscar-centros { display: grid; gap: 10px; margin: 0 0 16px; }
+.filtros-zona input, .filtros-zona select, .buscar-centros input { margin: 0; }
+@media (min-width: 640px) {
+  .filtros-zona { grid-template-columns: 2fr 1fr 1fr; }
+  .buscar-centros { grid-template-columns: 1fr auto; align-items: center; }
+}
+#estado-cerca { margin: -6px 0 14px; }

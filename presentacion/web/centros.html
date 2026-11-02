@@ -42,6 +42,19 @@
       </button>
     </div>
 
+    <!-- CU-11: buscar por nombre o barrio, y ordenar por cercania -->
+    <div class="buscar-centros">
+      <div class="campo-icono">
+        <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+        <input type="search" id="buscar-centro" placeholder="Buscar por nombre o barrio" aria-label="Buscar por nombre o barrio">
+      </div>
+      <button type="button" id="boton-cerca" class="boton secundario">
+        <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+        Cerca de mí
+      </button>
+    </div>
+    <p id="estado-cerca" class="ayuda oculto"></p>
+
     <div class="centros-vista">
       <div>
         <div id="mapa-centros" class="mapa mapa-centros"></div>

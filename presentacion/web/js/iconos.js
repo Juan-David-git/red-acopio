@@ -25,6 +25,7 @@
     "casa": '<g ' + L + '><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></g>',
     "calendario": '<g ' + L + '><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></g>',
     "check": '<g ' + L + '><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></g>',
+    "mas": '<path ' + L + ' d="M12 5v14M5 12h14"/>',
     "equis": '<g ' + L + '><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></g>',
     "reloj": '<g ' + L + '><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g>',
     "basura": '<path ' + L + ' d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',

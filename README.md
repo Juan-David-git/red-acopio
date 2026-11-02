@@ -18,6 +18,24 @@ Se abre solo el navegador en http://localhost:8000. Para detener el servidor: Ct
 - `logica/` — reglas de negocio: registro, sesiones, donaciones y estados (patrón State en `estados.py`).
 - `datos/` — lectura y escritura de los archivos JSON en `datos/json/`.
 
+## Datos de demostración (HU-18)
+
+Para tener la plataforma con datos listos para mostrar:
+
+```
+python datos/semilla.py
+```
+
+Agrega 10 donantes, 5 conductores, un encargado para cada centro que no tenga y donaciones en todos los estados (publicada, en camino, por llevar, recibida y cancelada). No borra nada y se puede correr varias veces sin duplicar.
+
+Todas las cuentas de prueba tienen la contraseña **RedAcopio2026**:
+
+| Rol | Correos |
+|---|---|
+| Donante | marta, jorge, luisa, andres, sandra, hector, paola, camilo, diana, oscar `@demo.redacopio.co` |
+| Conductor | ricardo, natalia, fabian, yolanda `@demo.redacopio.co` (mauricio queda sin disponibilidad, para probar que no puede aceptar) |
+| Centro de acopio | gloria (Tienda Don Roberto), hernan (Salón Comunal San Francisco), beatriz (Fundación Luz), alvaro (Parroquia San Juan Bautista) `@demo.redacopio.co` |
+
 ## Pruebas
 
 ```
@@ -35,6 +53,14 @@ Trabaja sobre una copia temporal de los JSON, así que no cambia los datos reale
 - Los mapas necesitan internet. Sin conexión, la página sigue funcionando y la donación se publica solo con la dirección escrita.
 - No hay seguimiento en tiempo real del conductor: se muestra el recorrido planeado.
 
+**Por qué OSRM y no la API de Google Maps (HU-14).** La historia pide calcular la ruta del conductor. Se usa el servidor público de [OSRM](https://project-osrm.org), que trabaja sobre los mismos datos de OpenStreetMap que el mapa, porque:
+
+- no pide clave ni tarjeta de crédito (la API de Rutas de Google exige una cuenta de facturación y la clave quedaría expuesta en el JavaScript del navegador);
+- devuelve la misma información que necesita la historia: el trazado por calles, la distancia y el tiempo estimado;
+- si en algún momento el servicio no responde, la página no se cae: dibuja una línea recta con la distancia aproximada.
+
+Para la navegación paso a paso, el botón «Cómo llegar» abre el mismo recorrido en Google Maps en el celular del conductor, así que no se pierde nada frente a usar Google.
+
 ## Notas
 
 - Las sesiones se guardan en memoria: si se reinicia el servidor, hay que volver a iniciar sesión.
@@ -46,3 +72,14 @@ Trabaja sobre una copia temporal de los JSON, así que no cambia los datos reale
 - Entrega personal: al donar se escoge "Que la recojan" o "Yo la llevo". Si la lleva el donante, la donación queda en estado "por llevar" (no la ven los conductores) y el centro la confirma al recibirla.
 - Avisos automáticos: cada 20 segundos (solo con la página a la vista) se revisa si algo cambió y aparece un aviso abajo.
 - Panel del centro (`panel.html`): el encargado ve lo que viene en camino y lo recibido, confirma la llegada de una donación (además del conductor) y actualiza horario, capacidad y necesidades. Si deja las necesidades vacías, el centro deja de aparecer para los donantes.
+- Donar varios artículos a la vez (CU-04): cada artículo lleva cantidad y unidad (unidades, kg, libras, bolsas, paquetes o cajas). Si son alimentos se pide la fecha de vencimiento y no se aceptan vencidos. El donante puede usar la dirección guardada en su perfil.
+- Cancelar (CU-05): el donante escoge el motivo y queda guardado.
+- Mis donaciones (CU-06): filtro por estado, historial con fecha de cada cambio y, cuando va en camino, el nombre y teléfono del conductor.
+- Observación de entrega (CU-09): al marcar entregada (conductor) o confirmar recibido (centro) se puede dejar una nota, que ve el donante.
+- En la zona (CU-07): el encargado ve las donaciones publicadas cerca de su centro, de la más cercana a la más lejana, y puede buscar por artículo o barrio. No se muestra el teléfono del donante.
+- Buscar centros (CU-11): en `centros.html` se busca por nombre o barrio y el botón «Cerca de mí» los ordena por distancia.
+- Alerta de capacidad (CU-13): cuando un centro llega al 80 % aparece un aviso en su panel; se quita cuando baja del 70 %.
+
+## Navegadores (HU-19)
+
+Probado en Chrome. Antes de entregar hay que abrirlo también en Firefox y Edge (registro, publicar, aceptar, entregar y el mapa) y anotar el resultado.
