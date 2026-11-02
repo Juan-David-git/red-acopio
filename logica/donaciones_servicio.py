@@ -166,14 +166,38 @@ def confirmar_recepcion(id_gestor, id_donacion):
     return donacion
 
 
-def ocupacion_del_centro(id_centro):
-    # cuantos articulos tiene comprometidos el centro:
-    # lo publicado, en camino o ya recibido (lo cancelado no cuenta)
-    ocupado = 0
+def inventario_del_centro(id_centro):
+    # numeros del centro:
+    #   recibido:   todo lo que ha llegado
+    #   repartido:  lo que ya entrego a las familias
+    #   en_bodega:  recibido - repartido (lo que tiene guardado ahora)
+    #   en_camino:  publicado o en camino hacia el centro (ya comprometido)
+    #   ocupado:    en_bodega + en_camino  -> esto es lo que cuenta contra la capacidad
+    recibido = 0
+    en_camino = 0
     for d in repo.donaciones.buscar_por("id_centro", id_centro):
-        if d["estado"] != "cancelada":
-            ocupado += d["cantidad"]
-    return ocupado
+        if d["estado"] == "recibida":
+            recibido += d["cantidad"]
+        elif d["estado"] in ("publicada", "en camino"):
+            en_camino += d["cantidad"]
+
+    repartido = 0
+    for s in repo.salidas.buscar_por("id_centro", id_centro):
+        repartido += s["cantidad"]
+
+    en_bodega = max(0, recibido - repartido)
+    return {
+        "recibido": recibido,
+        "repartido": repartido,
+        "en_bodega": en_bodega,
+        "en_camino": en_camino,
+        "ocupado": en_bodega + en_camino
+    }
+
+
+def ocupacion_del_centro(id_centro):
+    # cuantos articulos cuentan contra la capacidad del centro
+    return inventario_del_centro(id_centro)["ocupado"]
 
 
 def donaciones_del_centro(id_centro):

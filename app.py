@@ -13,6 +13,7 @@ from logica.usuarios_servicio import (
 )
 from logica import donaciones_servicio
 from logica import centros_servicio
+from logica import estadisticas_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -61,7 +62,7 @@ class Manejador(BaseHTTPRequestHandler):
 
             # lista de centros (cualquiera la puede ver)
             elif ruta == "/api/centros":
-                self.responder_json(200, repo.centros.listar())
+                self.responder_json(200, centros_servicio.listar_publico())
 
             # ----- donante -----
             elif ruta == "/api/mis-donaciones":
@@ -90,6 +91,24 @@ class Manejador(BaseHTTPRequestHandler):
                 usuario = self.exigir_rol("gestor")
                 if usuario:
                     self.responder_json(200, centros_servicio.donaciones(usuario["id"]))
+
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.salidas(usuario["id"]))
+
+            # ----- estadisticas de cada panel -----
+            elif ruta == "/api/mis-estadisticas":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                elif usuario["rol"] == "donante":
+                    self.responder_json(200, estadisticas_servicio.del_donante(usuario["id"]))
+                elif usuario["rol"] == "conductor":
+                    self.responder_json(200, estadisticas_servicio.del_conductor(usuario["id"]))
+                else:
+                    centro = centros_servicio.centro_del_gestor(usuario["id"])
+                    self.responder_json(200, estadisticas_servicio.del_centro(centro["id"]))
 
             # si no es de la API, es un archivo (html, css, js)
             else:
@@ -155,6 +174,12 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     centro = centros_servicio.actualizar(usuario["id"], datos)
                     self.responder_json(200, {"mensaje": "Datos del centro guardados.", "centro": centro})
+
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    centros_servicio.registrar_salida(usuario["id"], datos)
+                    self.responder_json(201, {"mensaje": "Entrega registrada. ¡Gracias por llevar la ayuda a las familias!"})
 
             # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
             elif len(partes) == 5 and partes[2] == "donaciones":
