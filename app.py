@@ -14,6 +14,7 @@ from logica.usuarios_servicio import (
 from logica import donaciones_servicio
 from logica import centros_servicio
 from logica import estadisticas_servicio
+from logica import perfil_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -58,6 +59,10 @@ class Manejador(BaseHTTPRequestHandler):
                     if usuario["rol"] == "conductor":
                         respuesta["disponible"] = usuario.get("disponible", False)
                         respuesta["franjas"] = usuario.get("franjas", [])
+                        # su punto de partida y hasta donde puede ir (para ordenar por cercania)
+                        respuesta["zona_latitud"] = usuario.get("zona_latitud")
+                        respuesta["zona_longitud"] = usuario.get("zona_longitud")
+                        respuesta["radio_km"] = usuario.get("radio_km", 5)
                     self.responder_json(200, respuesta)
 
             # lista de centros (cualquiera la puede ver)
@@ -96,6 +101,14 @@ class Manejador(BaseHTTPRequestHandler):
                 usuario = self.exigir_rol("gestor")
                 if usuario:
                     self.responder_json(200, centros_servicio.salidas(usuario["id"]))
+
+            # ----- perfil (cualquier usuario con sesion) -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    self.responder_json(200, perfil_servicio.ver(usuario["id"]))
 
             # ----- estadisticas de cada panel -----
             elif ruta == "/api/mis-estadisticas":
@@ -160,6 +173,23 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     donaciones_servicio.publicar(usuario["id"], datos)
                     self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
+
+            # ----- perfil -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil = perfil_servicio.actualizar(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Sus datos quedaron guardados.", "perfil": perfil})
+
+            elif ruta == "/api/perfil/clave":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil_servicio.cambiar_clave(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Su contraseña fue cambiada."})
 
             # ----- conductor: horarios (RF020) -----
             elif ruta == "/api/disponibilidad":

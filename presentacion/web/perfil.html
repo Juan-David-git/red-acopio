@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Acopio - Mi perfil</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <script src="/js/iconos.js"></script>
+
+  <header class="barra barra-usuario">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+    <a id="volver-panel" class="boton-salir barra-derecha" href="/">
+      <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+      <span>Mi panel</span>
+    </a>
+    <button id="boton-salir" class="boton-salir" type="button">
+      <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
+      <span>Salir</span>
+    </button>
+  </header>
+
+  <main class="contenedor">
+    <div class="perfil-cabeza">
+      <span class="avatar avatar-grande"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
+      <div>
+        <h1 id="perfil-nombre">Mi perfil</h1>
+        <p class="subtitulo" id="perfil-rol"></p>
+      </div>
+    </div>
+
+    <div id="mensaje" class="mensaje" role="alert"></div>
+
+    <!-- ===== datos personales ===== -->
+    <form id="form-perfil" class="tarjeta">
+      <div class="tarjeta-titulo">
+        <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+        <div>
+          <h2>Mis datos</h2>
+          <p>Así lo ven los conductores y centros cuando coordinan una entrega.</p>
+        </div>
+      </div>
+
+      <label for="nombre">
+        <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+        Nombre completo
+      </label>
+      <input type="text" id="nombre" autocomplete="name">
+
+      <label for="telefono">
+        <svg class="ico" aria-hidden="true"><use href="#i-telefono"></use></svg>
+        Celular / WhatsApp
+      </label>
+      <input type="tel" id="telefono" maxlength="10" inputmode="numeric" autocomplete="tel">
+
+      <label for="ciudad">
+        <svg class="ico" aria-hidden="true"><use href="#i-ciudad"></use></svg>
+        Ciudad
+      </label>
+      <select id="ciudad">
+        <option>Bucaramanga</option>
+        <option>Floridablanca</option>
+        <option>Girón</option>
+        <option>Piedecuesta</option>
+      </select>
+
+      <label for="correo">
+        <svg class="ico" aria-hidden="true"><use href="#i-correo"></use></svg>
+        Correo electrónico
+      </label>
+      <input type="email" id="correo" disabled>
+      <p class="ayuda">El correo es su usuario para entrar y no se puede cambiar.</p>
+
+      <!-- ===== solo conductor ===== -->
+      <div id="campos-conductor" class="oculto">
+        <h2>Mi vehículo y mi zona</h2>
+
+        <label for="tipo_vehiculo">
+          <svg class="ico" aria-hidden="true"><use href="#i-vehiculo"></use></svg>
+          Tipo de vehículo
+        </label>
+        <select id="tipo_vehiculo">
+          <option value="moto">Moto</option>
+          <option value="carro">Carro</option>
+          <option value="camioneta">Camioneta</option>
+        </select>
+
+        <label for="zona">
+          <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+          Zona donde puede recoger
+        </label>
+        <input type="text" id="zona" placeholder="Ej: Norte, Centro, Cabecera">
+
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+          Marque en el mapa su punto de partida
+        </label>
+        <p class="ayuda" style="margin: 0 0 10px">Por ejemplo su casa o su trabajo. Así le mostramos primero las donaciones más cercanas.</p>
+        <div id="ubicacion-mapa">
+          <div id="mapa-zona" class="mapa mapa-elegir" aria-label="Mapa para marcar su punto de partida"></div>
+          <div class="mapa-herramientas">
+            <button type="button" id="boton-ubicacion" class="boton secundario">
+              <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+              Usar mi ubicación
+            </button>
+            <button type="button" id="boton-quitar-punto" class="boton secundario oculto">
+              <svg class="ico" aria-hidden="true"><use href="#i-equis"></use></svg>
+              Quitar punto
+            </button>
+            <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+          </div>
+        </div>
+
+        <label for="radio_km">
+          <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+          ¿Hasta qué distancia puede ir a recoger?
+        </label>
+        <select id="radio_km">
+          <option value="2">Hasta 2 km</option>
+          <option value="5">Hasta 5 km</option>
+          <option value="10">Hasta 10 km</option>
+          <option value="20">Hasta 20 km</option>
+        </select>
+      </div>
+
+      <button type="submit" class="boton verde ancho" style="margin-top: 28px">
+        <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>
+        Guardar mis datos
+      </button>
+    </form>
+
+    <!-- ===== contraseña ===== -->
+    <form id="form-clave" class="tarjeta">
+      <div class="tarjeta-titulo">
+        <svg class="ico" aria-hidden="true"><use href="#i-candado"></use></svg>
+        <div>
+          <h2>Cambiar contraseña</h2>
+          <p>Use mínimo 8 caracteres.</p>
+        </div>
+      </div>
+
+      <label for="clave_actual">Contraseña actual</label>
+      <input type="password" id="clave_actual" autocomplete="current-password">
+
+      <label for="clave_nueva">Contraseña nueva</label>
+      <input type="password" id="clave_nueva" autocomplete="new-password">
+
+      <label for="clave_confirmar">Repita la contraseña nueva</label>
+      <input type="password" id="clave_confirmar" autocomplete="new-password">
+
+      <button type="submit" class="boton secundario ancho" style="margin-top: 24px">
+        <svg class="ico" aria-hidden="true"><use href="#i-candado"></use></svg>
+        Cambiar contraseña
+      </button>
+    </form>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
+  <script src="/js/ojito.js"></script>
+  <script src="/js/perfil.js"></script>
+</body>
+</html>
