@@ -80,6 +80,23 @@ function dato(nombreIcono, html) {
   return '<p class="dato">' + icono(nombreIcono) + "<span>" + html + "</span></p>";
 }
 
+// que tan lleno esta un centro: "" (con espacio), "casi" (desde 75 %) o "lleno"
+function nivelOcupacion(porcentaje) {
+  if (porcentaje >= 100) return "lleno";
+  if (porcentaje >= 75) return "casi";
+  return "";
+}
+
+// barra de ocupacion de un centro (necesita c.porcentaje, c.ocupado, c.capacidad_maxima y c.libre)
+function barraOcupacion(c) {
+  const nivel = nivelOcupacion(c.porcentaje);
+  const texto = nivel === "lleno" ? "Sin espacio por ahora" : "Espacio para " + c.libre + " artículos";
+  return '<div class="ocupacion">' +
+    '<div class="ocupacion-texto"><span>' + c.porcentaje + " % lleno</span><span>" + texto + "</span></div>" +
+    '<div class="ocupacion-barra ' + nivel + '" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + c.porcentaje + '">' +
+    '<div style="width:' + c.porcentaje + '%"></div></div></div>';
+}
+
 // "2026-10-12 17:30" -> "12 oct. 2026, 17:30"  (formato colombiano, RNF015)
 function formatearFecha(texto) {
   if (!texto) return "";

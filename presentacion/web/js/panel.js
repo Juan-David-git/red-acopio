@@ -33,9 +33,15 @@ botones.forEach(function (boton) {
     document.getElementById(boton.dataset.seccion).classList.remove("oculto");
     ocultarMensaje();
 
-    if (boton.dataset.seccion === "seccion-centro") {
+    if (boton.dataset.seccion === "seccion-resumen") {
+      pintarEstadisticas(document.getElementById("resumen"));
+    } else if (boton.dataset.seccion === "seccion-centro") {
       llenarFormulario();
       mostrarMapaMiCentro();
+    } else if (boton.dataset.seccion === "seccion-bodega") {
+      cargarCentro();
+      cargarDonaciones();
+      cargarSalidas();
     } else {
       cargarDonaciones();
     }
@@ -59,13 +65,16 @@ function pintarResumen() {
     centro.direccion + ", " + centro.barrio + ", " + centro.ciudad + " · " + centro.horario;
 
   document.getElementById("cifra-libre").textContent = centro.libre;
+  document.getElementById("cifra-bodega").textContent = centro.en_bodega;
+  document.getElementById("texto-bodega").textContent = centro.en_bodega;
 
   // barra de ocupacion: verde normal, ambar desde 75 %, roja si esta lleno
-  const porcentaje = Math.min(100, Math.round(centro.ocupado * 100 / centro.capacidad_maxima));
+  // (ocupado = lo que hay en bodega + lo que viene en camino)
+  const porcentaje = centro.porcentaje;
   const barra = document.getElementById("ocupacion-barra");
   const relleno = document.getElementById("ocupacion-relleno");
   relleno.style.width = porcentaje + "%";
-  barra.className = "ocupacion-barra" + (porcentaje >= 100 ? " lleno" : porcentaje >= 75 ? " casi" : "");
+  barra.className = "ocupacion-barra " + nivelOcupacion(porcentaje);
   barra.setAttribute("aria-valuenow", porcentaje);
   document.getElementById("ocupacion-texto").textContent =
     centro.ocupado + " de " + centro.capacidad_maxima + " artículos (" + porcentaje + " %)";
@@ -104,7 +113,6 @@ async function cargarDonaciones() {
   const recibidas = datos.recibidas.reverse();
 
   document.getElementById("cifra-llegar").textContent = porLlegar.length;
-  document.getElementById("cifra-recibidas").textContent = recibidas.length;
 
   // por llegar: primero las que ya vienen en camino
   porLlegar.sort(function (a, b) {
@@ -163,7 +171,70 @@ async function recibir(id) {
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
   }
+  cargarCentro();
   cargarDonaciones();
+}
+
+// ---------- BODEGA: entregas a las familias ----------
+const botonesSalida = document.querySelectorAll("#form-salida .categoria");
+
+botonesSalida.forEach(function (boton) {
+  boton.addEventListener("click", function () {
+    elegirCategoriaSalida(boton.dataset.categoria);
+  });
+});
+
+function elegirCategoriaSalida(categoria) {
+  document.getElementById("salida_categoria").value = categoria;
+  botonesSalida.forEach(function (b) {
+    const escogido = b.dataset.categoria === categoria;
+    b.classList.toggle("activa", escogido);
+    b.setAttribute("aria-checked", escogido ? "true" : "false");
+  });
+}
+
+document.getElementById("form-salida").addEventListener("submit", async function (evento) {
+  evento.preventDefault();
+  const formulario = this;
+  const datos = {
+    categoria: document.getElementById("salida_categoria").value,
+    cantidad: document.getElementById("salida_cantidad").value,
+    descripcion: document.getElementById("salida_descripcion").value
+  };
+  if (datos.categoria === "") {
+    mostrarMensaje("Escoja qué entregó: Alimentos, Ropa, Aseo o Varias.", "error");
+    return;
+  }
+  const r = await enviarJson("/api/mi-centro/salidas", datos);
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
+    formulario.reset();
+    elegirCategoriaSalida("");
+    cargarCentro();
+    cargarSalidas();
+  }
+});
+
+async function cargarSalidas() {
+  const r = await pedirApi("/api/mi-centro/salidas");
+  if (!r.ok) return;
+  const caja = document.getElementById("lista-salidas");
+  if (r.datos.length === 0) {
+    caja.innerHTML = '<p class="vacio">Todavía no ha registrado entregas a las familias.</p>';
+    return;
+  }
+  let html = "";
+  r.datos.forEach(function (s) {
+    html += '<div class="donacion">';
+    html += iconoCategoria(s.categoria);
+    html += '<div class="donacion-cabeza"><h3>' + s.cantidad + " artículos</h3>" +
+      '<span class="estado recibida">' + icono("corazon") + limpiar(s.categoria) + "</span></div>";
+    html += '<div class="donacion-cuerpo">';
+    html += dato("usuario", limpiar(s.descripcion));
+    html += dato("calendario", "Entregado el " + formatearFecha(s.fecha));
+    html += "</div></div>";
+  });
+  caja.innerHTML = html;
 }
 
 // ---------- MI CENTRO ----------

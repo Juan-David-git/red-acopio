@@ -34,7 +34,7 @@ function crearMapa(elemento, opciones) {
 
 // pin con el estilo de la pagina: gota de color con un icono blanco adentro
 function iconoPin(tipo) {
-  const icono = { recogida: "caja", centro: "centro", centroApagado: "centro" }[tipo] || "pin";
+  const icono = { recogida: "caja", centro: "centro", centroApagado: "centro", centroCasi: "centro", centroLleno: "centro" }[tipo] || "pin";
   return L.divIcon({
     className: "pin pin-" + tipo,
     html: '<svg class="pin-gota" viewBox="0 0 32 42" aria-hidden="true">' +

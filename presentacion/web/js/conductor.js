@@ -37,6 +37,7 @@ botones.forEach(function (boton) {
     if (boton.dataset.seccion === "seccion-recoger") cargarPorRecoger();
     if (boton.dataset.seccion === "seccion-entregas") cargarEntregas();
     if (boton.dataset.seccion === "seccion-horarios") llenarHorarios();
+    if (boton.dataset.seccion === "seccion-resumen") pintarEstadisticas(document.getElementById("resumen"));
   });
 });
 

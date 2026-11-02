@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Red Acopio - Centros de acopio</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/css/estilos.css">
+</head>
+<body>
+  <script src="/js/iconos.js"></script>
+
+  <header class="barra">
+    <a class="logo" href="/">
+      <svg aria-hidden="true"><use href="#i-logo"></use></svg>
+      <span>Red<em>Acopio</em></span>
+    </a>
+    <!-- lo llena centros.js: "Mi panel" si hay sesion, "Iniciar sesión" si no -->
+    <a id="enlace-cuenta" class="boton-salir barra-derecha" href="/login.html">
+      <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+      <span>Iniciar sesión</span>
+    </a>
+  </header>
+
+  <main class="contenedor contenedor-ancho">
+    <h1>Centros de acopio</h1>
+    <p class="subtitulo">Vea qué necesita cada centro y qué tan lleno está antes de donar.</p>
+
+    <div id="mensaje" class="mensaje" role="alert"></div>
+
+    <!-- filtro por categoria -->
+    <div class="chips" role="group" aria-label="Filtrar por lo que necesitan">
+      <button type="button" class="chip activa" data-filtro="">Todos</button>
+      <button type="button" class="chip" data-filtro="Alimentos">
+        <svg class="ico" aria-hidden="true"><use href="#i-alimentos"></use></svg> Alimentos
+      </button>
+      <button type="button" class="chip" data-filtro="Ropa">
+        <svg class="ico" aria-hidden="true"><use href="#i-ropa"></use></svg> Ropa
+      </button>
+      <button type="button" class="chip" data-filtro="Aseo">
+        <svg class="ico" aria-hidden="true"><use href="#i-aseo"></use></svg> Aseo
+      </button>
+    </div>
+
+    <div class="centros-vista">
+      <div>
+        <div id="mapa-centros" class="mapa mapa-centros"></div>
+        <p class="mapa-leyenda leyenda-ocupacion">
+          <span><i class="punto centro"></i>Con espacio</span>
+          <span><i class="punto casi"></i>Casi lleno</span>
+          <span><i class="punto lleno"></i>Lleno</span>
+        </p>
+      </div>
+      <div id="lista-centros"></div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/comun.js"></script>
+  <script src="/js/mapa.js"></script>
+  <script src="/js/centros.js"></script>
+</body>
+</html>

@@ -44,6 +44,9 @@ botones.forEach(function (boton) {
     if (boton.dataset.seccion === "seccion-mis") {
       cargarDonaciones();
     }
+    if (boton.dataset.seccion === "seccion-resumen") {
+      pintarEstadisticas(document.getElementById("resumen"));
+    }
   });
 });
 
@@ -80,7 +83,10 @@ function elegirCategoria(categoria) {
   let cuantos = 0;
   centros.forEach(function (c) {
     if (c.necesidades[categoria]) {
-      opciones += '<option value="' + c.id + '">' + limpiar(c.nombre) + " — " + limpiar(c.barrio) + "</option>";
+      // los centros llenos se ven pero no se pueden escoger
+      const lleno = c.porcentaje >= 100;
+      opciones += '<option value="' + c.id + '"' + (lleno ? " disabled" : "") + ">" +
+        limpiar(c.nombre) + " — " + limpiar(c.barrio) + (lleno ? " (lleno)" : " · " + c.porcentaje + " % lleno") + "</option>";
       cuantos++;
     }
   });
@@ -100,7 +106,8 @@ document.getElementById("id_centro").addEventListener("change", function () {
   const texto = document.getElementById("necesita");
 
   if (centro && centro.necesidades[categoria]) {
-    texto.textContent = "Este centro necesita: " + centro.necesidades[categoria].join(", ");
+    texto.textContent = "Este centro necesita: " + centro.necesidades[categoria].join(", ") +
+      ". Tiene espacio para " + centro.libre + " artículos más.";
   } else {
     texto.textContent = "";
   }

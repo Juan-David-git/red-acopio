@@ -19,6 +19,10 @@
       <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
       <span id="nombre-usuario"></span>
     </div>
+    <a class="boton-salir" href="/centros.html" title="Centros de acopio">
+      <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+      <span>Centros</span>
+    </a>
     <button id="boton-salir" class="boton-salir" type="button">
       <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
       <span>Salir</span>
@@ -37,6 +41,9 @@
       </button>
       <button type="button" data-seccion="seccion-horarios">
         <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg> Horarios
+      </button>
+      <button type="button" data-seccion="seccion-resumen">
+        <svg class="ico" aria-hidden="true"><use href="#i-grafica"></use></svg> Resumen
       </button>
     </div>
 
@@ -61,6 +68,11 @@
         Entregas completadas
       </h2>
       <div id="lista-completadas"></div>
+    </section>
+
+    <!-- ===== RESUMEN / ESTADISTICAS (lo dibuja estadisticas.js) ===== -->
+    <section id="seccion-resumen" class="oculto">
+      <div id="resumen"></div>
     </section>
 
     <!-- ===== HORARIOS (RF020) ===== -->
@@ -101,6 +113,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/mapa.js"></script>
+  <script src="/js/estadisticas.js"></script>
   <script src="/js/conductor.js"></script>
 </body>
 </html>

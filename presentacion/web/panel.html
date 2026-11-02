@@ -19,6 +19,10 @@
       <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
       <span id="nombre-usuario"></span>
     </div>
+    <a class="boton-salir" href="/centros.html" title="Centros de acopio">
+      <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+      <span>Centros</span>
+    </a>
     <button id="boton-salir" class="boton-salir" type="button">
       <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
       <span>Salir</span>
@@ -43,8 +47,8 @@
           <span>Por llegar</span>
         </div>
         <div class="cifra">
-          <strong id="cifra-recibidas">–</strong>
-          <span>Recibidas</span>
+          <strong id="cifra-bodega">–</strong>
+          <span>En bodega</span>
         </div>
         <div class="cifra">
           <strong id="cifra-libre">–</strong>
@@ -68,8 +72,11 @@
       <button type="button" class="activa" data-seccion="seccion-llegar">
         <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg> Por llegar
       </button>
-      <button type="button" data-seccion="seccion-recibidas">
-        <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg> Recibidas
+      <button type="button" data-seccion="seccion-bodega">
+        <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Bodega
+      </button>
+      <button type="button" data-seccion="seccion-resumen">
+        <svg class="ico" aria-hidden="true"><use href="#i-grafica"></use></svg> Estadísticas
       </button>
       <button type="button" data-seccion="seccion-centro">
         <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg> Mi centro
@@ -85,8 +92,71 @@
     </section>
 
     <!-- ===== RECIBIDAS ===== -->
-    <section id="seccion-recibidas" class="oculto">
+    <section id="seccion-bodega" class="oculto">
+      <!-- registrar lo que se entrego a las familias: libera espacio -->
+      <form id="form-salida" class="tarjeta">
+        <div class="tarjeta-titulo">
+          <svg class="ico" aria-hidden="true"><use href="#i-corazon-linea"></use></svg>
+          <div>
+            <h2>Entregar a las familias</h2>
+            <p>Tiene <strong id="texto-bodega">0</strong> artículos en bodega. Al registrar lo que entregó, se libera espacio para nuevas donaciones.</p>
+          </div>
+        </div>
+
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-etiqueta"></use></svg>
+          ¿Qué entregó?
+        </label>
+        <input type="hidden" id="salida_categoria" value="">
+        <div class="categorias categorias-4" role="radiogroup" aria-label="Qué entregó">
+          <button type="button" class="categoria" data-categoria="Alimentos" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-alimentos"></use></svg> Alimentos
+          </button>
+          <button type="button" class="categoria" data-categoria="Ropa" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-ropa"></use></svg> Ropa
+          </button>
+          <button type="button" class="categoria" data-categoria="Aseo" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-aseo"></use></svg> Aseo
+          </button>
+          <button type="button" class="categoria" data-categoria="Varias" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Varias
+          </button>
+        </div>
+
+        <label for="salida_cantidad">
+          <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
+          Cantidad de artículos
+        </label>
+        <input type="number" id="salida_cantidad" min="1" inputmode="numeric" placeholder="Ej: 20">
+
+        <label for="salida_descripcion">
+          <svg class="ico" aria-hidden="true"><use href="#i-nota"></use></svg>
+          ¿A quién se entregó?
+        </label>
+        <input type="text" id="salida_descripcion" placeholder="Ej: 12 mercados para familias del barrio Girardot">
+
+        <button type="submit" class="boton ancho" style="margin-top: 24px">
+          <svg class="ico" aria-hidden="true"><use href="#i-corazon"></use></svg>
+          Registrar entrega
+        </button>
+      </form>
+
+      <h2 class="titulo-seccion">
+        <svg class="ico" aria-hidden="true"><use href="#i-corazon-linea"></use></svg>
+        Entregado a las familias
+      </h2>
+      <div id="lista-salidas"></div>
+
+      <h2 class="titulo-seccion">
+        <svg class="ico" aria-hidden="true"><use href="#i-check"></use></svg>
+        Donaciones recibidas
+      </h2>
       <div id="lista-recibidas"></div>
+    </section>
+
+    <!-- ===== RESUMEN / ESTADISTICAS (lo dibuja estadisticas.js) ===== -->
+    <section id="seccion-resumen" class="oculto">
+      <div id="resumen"></div>
     </section>
 
     <!-- ===== MI CENTRO: horario, capacidad y necesidades ===== -->
@@ -156,6 +226,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/mapa.js"></script>
+  <script src="/js/estadisticas.js"></script>
   <script src="/js/panel.js"></script>
 </body>
 </html>
