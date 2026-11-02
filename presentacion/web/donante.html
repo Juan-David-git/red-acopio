@@ -85,17 +85,17 @@
         <p class="ayuda" id="necesita"></p>
         <p class="ayuda"><a href="/centros.html" target="_blank">Ver todos los centros y qué tan llenos están</a></p>
 
-        <label for="articulo">
+        <!-- CU-04: puede donar varios articulos a la vez (los renglones los arma donante.js) -->
+        <label>
           <svg class="ico" aria-hidden="true"><use href="#i-lista"></use></svg>
-          Artículo
+          Artículos
         </label>
-        <input type="text" id="articulo" placeholder="Ej: arroz, camiseta, jabón">
-
-        <label for="cantidad">
-          <svg class="ico" aria-hidden="true"><use href="#i-cubos"></use></svg>
-          Cantidad
-        </label>
-        <input type="number" id="cantidad" min="1" placeholder="Ej: 5" inputmode="numeric">
+        <div id="articulos" class="articulos-form"></div>
+        <button type="button" id="boton-agregar-articulo" class="boton secundario">
+          <svg class="ico" aria-hidden="true"><use href="#i-mas"></use></svg>
+          Agregar otro artículo
+        </button>
+        <p class="ayuda" id="ayuda-vencimiento">Si son alimentos, escriba la fecha de vencimiento. Solo se reciben alimentos vigentes.</p>
 
         <label for="descripcion">
           <svg class="ico" aria-hidden="true"><use href="#i-nota"></use></svg>
@@ -132,6 +132,10 @@
             <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
             <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
           </div>
+          <button type="button" id="boton-mi-direccion" class="boton secundario oculto">
+            <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+            Usar la dirección de mi perfil
+          </button>
 
           <label>
             <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>

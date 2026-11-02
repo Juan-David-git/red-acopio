@@ -49,10 +49,11 @@ function tarjeta(d) {
   let html = '<div class="donacion">';
   html += iconoCategoria(d.categoria);
   html += '<div class="donacion-cabeza">';
-  html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
+  html += "<h3>" + limpiar(tituloDonacion(d)) + "</h3>";
   html += etiquetaEstado(d.estado);
   html += "</div>";
   html += '<div class="donacion-cuerpo">';
+  html += detalleArticulos(d);
   if (d.descripcion) {
     html += dato("nota", limpiar(d.descripcion));
   }
@@ -226,8 +227,10 @@ async function cargarEntregas() {
     datos.pendientes.forEach(function (d) {
       html += tarjeta(d);
       html += contactoDonante(d);
-      html += '<button class="boton verde" onclick="completar(' + d.id + ')">' + icono("check") + "Marcar como entregada</button>";
-      html += "</div></div>";
+      html += '<button class="boton verde" aria-expanded="false" onclick="abrirEntrega(this)">' + icono("check") + "Marcar como entregada</button>";
+      html += "</div>";
+      html += formularioEntrega(d.id, "completar", "Confirmar entrega");
+      html += "</div>";
     });
     pendientes.innerHTML = html;
 
@@ -246,18 +249,17 @@ async function cargarEntregas() {
     datos.completadas.forEach(function (d) {
       html += tarjeta(d);
       html += dato("check", "Entregada el " + formatearFecha(d.fecha_entrega));
+      html += datoObservacion(d);
       html += "</div></div>";
     });
     completadas.innerHTML = html;
   }
 }
 
-async function completar(id) {
-  if (!confirm("¿Confirma que ya entregó esta donación en el centro de acopio?")) {
-    return;
-  }
+async function completar(evento, id) {
+  evento.preventDefault();
   completadasPorMi.add(id);   // para no avisarle de su propia accion
-  const r = await enviarJson("/api/donaciones/" + id + "/completar");
+  const r = await enviarJson("/api/donaciones/" + id + "/completar", leerObservacion(id));
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
   }
@@ -271,6 +273,9 @@ function llenarHorarios() {
   document.querySelectorAll('input[name="franja"]').forEach(function (c) {
     c.checked = conductor.franjas.includes(c.value);
   });
+  document.querySelectorAll('input[name="dia"]').forEach(function (c) {
+    c.checked = (conductor.dias || []).includes(c.value);
+  });
 }
 
 document.getElementById("form-horarios").addEventListener("submit", async function (evento) {
@@ -282,10 +287,16 @@ document.getElementById("form-horarios").addEventListener("submit", async functi
     franjas.push(c.value);
   });
 
-  const r = await enviarJson("/api/disponibilidad", { disponible: disponible, franjas: franjas });
+  const dias = [];
+  document.querySelectorAll('input[name="dia"]:checked').forEach(function (c) {
+    dias.push(c.value);
+  });
+
+  const r = await enviarJson("/api/disponibilidad", { disponible: disponible, franjas: franjas, dias: dias });
   if (r.ok) {
     conductor.disponible = disponible;
     conductor.franjas = franjas;
+    conductor.dias = dias;
     mostrarMensaje(r.datos.mensaje, "exito");
   }
 });
@@ -310,7 +321,7 @@ async function revisarCambios() {
       const nuevas = disponibles.filter(function (d) { return !disponiblesConocidas.has(d.id); });
       if (nuevas.length) {
         const texto = nuevas.length === 1
-          ? "Hay una donación nueva para recoger: " + nuevas[0].cantidad + " × " + nuevas[0].articulo + "."
+          ? "Hay una donación nueva para recoger: " + tituloDonacion(nuevas[0]) + "."
           : "Hay " + nuevas.length + " donaciones nuevas para recoger.";
         mostrarAviso(texto, "caja", { texto: "Ver", alTocar: function () { abrirPestana("seccion-recoger"); } });
       }
@@ -331,7 +342,7 @@ async function revisarCambios() {
       entregas.completadas.forEach(function (d) {
         // una entrega que aparece como completada y que usted no marco: la confirmo el centro
         if (!completadasConocidas.has(d.id) && !completadasPorMi.has(d.id)) {
-          mostrarAviso("El centro " + d.centro_nombre + " confirmó que recibió " + d.cantidad + " × " + d.articulo + ". ¡Gracias!", "check",
+          mostrarAviso("El centro " + d.centro_nombre + " confirmó que recibió " + tituloDonacion(d) + ". ¡Gracias!", "check",
             { texto: "Ver", alTocar: function () { abrirPestana("seccion-entregas"); } });
           if (seccionVisible("seccion-entregas") && !hayMapaAbierto("seccion-entregas")) cargarEntregas();
         }

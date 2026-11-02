@@ -4,33 +4,84 @@
 
 from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
-from logica.estados import ahora, estado_de
+import copy
+from datetime import date, datetime
+
+from logica.estados import ahora, estado_de, registrar_historial
 from logica.usuarios_servicio import CATEGORIAS
 from logica.ubicacion import leer_punto
 
 MODALIDADES = ["recogida", "personal"]
+UNIDADES = ["unidades", "kg", "libras", "bolsas", "paquetes", "cajas"]
+MAX_ARTICULOS = 10
 
 
 # ======================= DONANTE =======================
 
+def _leer_articulos(datos, categoria):
+    # CU-04: una donacion puede traer varios articulos, cada uno con cantidad y unidad.
+    # Si es comida, cada articulo lleva su fecha de vencimiento y no puede estar vencido.
+    # (tambien se acepta el formato viejo: un solo "articulo" y "cantidad")
+    lista = datos.get("articulos")
+    if lista is None:
+        lista = [{"articulo": datos.get("articulo", ""), "cantidad": datos.get("cantidad", 0),
+                  "unidad": datos.get("unidad", "unidades"), "vencimiento": datos.get("vencimiento", "")}]
+    if not isinstance(lista, list) or len(lista) == 0:
+        raise ErrorNegocio("Escriba qué artículo va a donar.", campo="articulo-0")
+    if len(lista) > MAX_ARTICULOS:
+        raise ErrorNegocio("Puede agregar hasta " + str(MAX_ARTICULOS) + " artículos por donación.")
+
+    hoy = date.today()
+    items = []
+    for i, a in enumerate(lista):
+        if not isinstance(a, dict):
+            raise ErrorNegocio("Los artículos no son válidos.")
+        nombre = str(a.get("articulo", "") or "").strip()[:60]
+        if nombre == "":
+            raise ErrorNegocio("Escriba qué artículo va a donar.", campo="articulo-" + str(i))
+        try:
+            cantidad = int(a.get("cantidad", 0))
+        except (TypeError, ValueError):
+            raise ErrorNegocio("La cantidad de «" + nombre + "» debe ser un número.", campo="cantidad-" + str(i))
+        if cantidad <= 0:
+            raise ErrorNegocio("La cantidad de «" + nombre + "» debe ser mayor que cero.", campo="cantidad-" + str(i))
+        unidad = a.get("unidad") or "unidades"
+        if unidad not in UNIDADES:
+            raise ErrorNegocio("Escoja la unidad de «" + nombre + "».", campo="unidad-" + str(i))
+
+        vencimiento = None
+        if categoria == "Alimentos":
+            texto = str(a.get("vencimiento", "") or "").strip()
+            if texto == "":
+                raise ErrorNegocio("Escriba la fecha de vencimiento de «" + nombre + "».", campo="vencimiento-" + str(i))
+            try:
+                fecha = datetime.strptime(texto, "%Y-%m-%d").date()
+            except ValueError:
+                raise ErrorNegocio("La fecha de vencimiento de «" + nombre + "» no es válida.", campo="vencimiento-" + str(i))
+            if fecha <= hoy:
+                raise ErrorNegocio("«" + nombre + "» ya está vencido o vence hoy. Solo se reciben alimentos vigentes.",
+                                   campo="vencimiento-" + str(i))
+            vencimiento = texto
+        items.append({"articulo": nombre, "cantidad": cantidad, "unidad": unidad, "vencimiento": vencimiento})
+    return items
+
+
 def publicar(id_donante, datos):
     categoria = datos.get("categoria", "")
-    articulo = datos.get("articulo", "").strip()
-    descripcion = datos.get("descripcion", "").strip()
-    direccion = datos.get("direccion_recogida", "").strip()
+    descripcion = str(datos.get("descripcion", "") or "").strip()[:200]
+    direccion = str(datos.get("direccion_recogida", "") or "").strip()
 
     try:
-        cantidad = int(datos.get("cantidad", 0))
         id_centro = int(datos.get("id_centro") or 0)
     except (TypeError, ValueError):
-        raise ErrorNegocio("Revise la cantidad y el centro de acopio.")
+        raise ErrorNegocio("Seleccione un centro de acopio.", campo="id_centro")
 
     if categoria not in CATEGORIAS:
-        raise ErrorNegocio("Seleccione una categoría.")
-    if articulo == "":
-        raise ErrorNegocio("Escriba qué artículo va a donar.")
-    if cantidad <= 0:
-        raise ErrorNegocio("La cantidad debe ser mayor que cero.")
+        raise ErrorNegocio("Seleccione una categoría.", campo="categoria")
+    items = _leer_articulos(datos, categoria)
+    # resumen para las listas: "arroz, aceite" y el total de articulos (lo que cuenta contra la capacidad)
+    articulo = ", ".join(i["articulo"] for i in items)
+    cantidad = sum(i["cantidad"] for i in items)
     # como llega al centro: "recogida" (la recoge un conductor) o "personal" (la lleva el donante)
     modalidad = datos.get("modalidad", "recogida")
     if modalidad not in MODALIDADES:
@@ -38,7 +89,7 @@ def publicar(id_donante, datos):
 
     if modalidad == "recogida":
         if direccion == "":
-            raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+            raise ErrorNegocio("Escriba la dirección donde se recoge la donación.", campo="direccion_recogida")
         # punto de recogida marcado en el mapa (opcional: si no hay internet
         # el mapa no carga, y la donacion igual se puede publicar con la direccion)
         latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
@@ -51,7 +102,7 @@ def publicar(id_donante, datos):
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
-        raise ErrorNegocio("Seleccione un centro de acopio.")
+        raise ErrorNegocio("Seleccione un centro de acopio.", campo="id_centro")
 
     # el centro tiene que necesitar esa categoria
     if categoria not in centro["necesidades"]:
@@ -70,6 +121,7 @@ def publicar(id_donante, datos):
         "categoria": categoria,
         "articulo": articulo,
         "cantidad": cantidad,
+        "articulos": items,
         "descripcion": descripcion,
         "direccion_recogida": direccion,
         "latitud_recogida": latitud,
@@ -81,8 +133,12 @@ def publicar(id_donante, datos):
         "id_conductor": None,
         "fecha_publicacion": ahora(),
         "fecha_ultimo_cambio": ahora(),
-        "fecha_entrega": None
+        "fecha_entrega": None,
+        "historial": []
     }
+    # CU-06: historial de estados (cada cambio queda con fecha)
+    registrar_historial(nueva, "publicada" if modalidad == "recogida" else "por llevar",
+                        "Publicada" if modalidad == "recogida" else "Publicada: la llevará el donante")
     return repo.donaciones.agregar(nueva)
 
 
@@ -93,15 +149,37 @@ def donaciones_del_donante(id_donante):
     return lista
 
 
-def cancelar(id_donante, id_donacion):
+MOTIVOS_CANCELACION = ["Ya no tengo los artículos", "Se la di a otra persona u organización",
+                       "Me equivoqué al publicarla", "Nadie la ha recogido", "Otro motivo"]
+
+
+def _texto_corto(datos, campo, maximo=200):
+    valor = datos.get(campo, "") if isinstance(datos, dict) else ""
+    return str(valor or "").strip()[:maximo]
+
+
+def cancelar(id_donante, id_donacion, datos=None):
     donacion = _buscar(id_donacion)
 
     # solo el dueño puede cancelarla
     if donacion["id_donante"] != id_donante:
         raise ErrorNegocio("Solo puede cancelar sus propias donaciones.")
 
+    # primero se revisa si se puede cancelar (en una copia, para no cambiar nada todavia)
+    estado_de(donacion).cancelar(copy.deepcopy(donacion))
+
+    # CU-05: el donante dice por que la cancela
+    motivo = _texto_corto(datos, "motivo", 120)
+    if motivo not in MOTIVOS_CANCELACION:
+        raise ErrorNegocio("Escoja el motivo de la cancelación.", campo="motivo-" + str(id_donacion))
+    detalle = _texto_corto(datos, "detalle", 200)
+    if motivo == "Otro motivo" and detalle == "":
+        raise ErrorNegocio("Cuéntenos brevemente el motivo.", campo="detalle-" + str(id_donacion))
+
     # el estado decide si se puede (patron State)
     estado_de(donacion).cancelar(donacion)
+    donacion["motivo_cancelacion"] = motivo + (": " + detalle if detalle else "")
+    donacion["historial"][-1]["texto"] += " (" + donacion["motivo_cancelacion"] + ")"
 
     repo.donaciones.actualizar(donacion)
     return donacion
@@ -148,7 +226,16 @@ def entregas_del_conductor(id_conductor):
     return {"pendientes": pendientes, "completadas": completadas}
 
 
-def marcar_entregada(id_conductor, id_donacion):
+def _guardar_observacion(donacion, datos, quien):
+    # CU-09: al entregar se puede dejar una nota (ej: "llegaron 2 bolsas rotas")
+    observacion = _texto_corto(datos, "observacion", 200)
+    if observacion:
+        donacion["observacion_entrega"] = observacion
+        donacion["observacion_de"] = quien
+        donacion["historial"][-1]["texto"] += ". Nota: " + observacion
+
+
+def marcar_entregada(id_conductor, id_donacion, datos=None):
     donacion = _buscar(id_donacion)
 
     # solo el conductor que la acepto puede marcarla
@@ -157,6 +244,8 @@ def marcar_entregada(id_conductor, id_donacion):
 
     # el estado decide si se puede (patron State)
     estado_de(donacion).completar(donacion)
+    donacion["historial"][-1]["texto"] = "Entregada en el centro por el conductor"
+    _guardar_observacion(donacion, datos, "conductor")
 
     repo.donaciones.actualizar(donacion)
     return donacion
@@ -164,7 +253,7 @@ def marcar_entregada(id_conductor, id_donacion):
 
 # ======================= CENTRO DE ACOPIO =======================
 
-def confirmar_recepcion(id_gestor, id_donacion):
+def confirmar_recepcion(id_gestor, id_donacion, datos=None):
     # el encargado del centro confirma que la donacion llego
     # (lo mismo que "marcar entregada" del conductor, por si el conductor no lo hizo)
     donacion = _buscar(id_donacion)
@@ -177,6 +266,8 @@ def confirmar_recepcion(id_gestor, id_donacion):
 
     # el estado decide si se puede (patron State): solo si esta en camino
     estado_de(donacion).completar(donacion)
+    donacion["historial"][-1]["texto"] = "Recibida y confirmada por el centro de acopio"
+    _guardar_observacion(donacion, datos, "centro")
 
     repo.donaciones.actualizar(donacion)
     return donacion
@@ -229,6 +320,27 @@ def donaciones_del_centro(id_centro):
     return {"por_llegar": por_llegar, "recibidas": recibidas}
 
 
+def publicadas_de_la_zona(centro):
+    # CU-07: el encargado ve lo que se esta publicando cerca de su centro
+    # (todas las publicadas que aun no tienen conductor, la mas cercana primero)
+    from logica.ubicacion import distancia_km
+    lista = []
+    for d in repo.donaciones.buscar_por("estado", "publicada"):
+        _agregar_detalle(d)
+        d.pop("donante_telefono", None)       # privacidad: el telefono no se muestra (igual que al conductor antes de aceptar)
+        if d.get("latitud_recogida") is not None and centro.get("latitud") is not None:
+            d["distancia_km"] = round(distancia_km(centro["latitud"], centro["longitud"],
+                                                   d["latitud_recogida"], d["longitud_recogida"]), 1)
+        else:
+            d["distancia_km"] = None
+        d.pop("latitud_recogida", None)
+        d.pop("longitud_recogida", None)
+        d["para_mi_centro"] = d["id_centro"] == centro["id"]
+        lista.append(d)
+    lista.sort(key=lambda d: (d["distancia_km"] is None, d["distancia_km"] or 0))
+    return lista
+
+
 # ======================= AYUDAS =======================
 
 def _buscar(id_donacion):
@@ -249,6 +361,18 @@ def _agregar_detalle(d):
         d["centro_horario"] = centro.get("horario", "")
         d["centro_latitud"] = centro.get("latitud")
         d["centro_longitud"] = centro.get("longitud")
+    # donaciones viejas (de antes del historial): se arma con las fechas que haya
+    if not d.get("historial"):
+        d["historial"] = [{"estado": "publicada", "fecha": d.get("fecha_publicacion", ""), "texto": "Publicada"}]
+        if d["estado"] != "publicada" and d.get("fecha_ultimo_cambio"):
+            textos = {"en camino": "Un conductor aceptó la recogida", "recibida": "Recibida en el centro de acopio",
+                      "cancelada": "Cancelada por el donante", "por llevar": "La llevará el donante"}
+            d["historial"].append({"estado": d["estado"], "fecha": d.get("fecha_entrega") or d["fecha_ultimo_cambio"],
+                                   "texto": textos.get(d["estado"], d["estado"])})
+    # para donaciones viejas de un solo articulo
+    if not d.get("articulos"):
+        d["articulos"] = [{"articulo": d.get("articulo", ""), "cantidad": d.get("cantidad", 0),
+                           "unidad": "unidades", "vencimiento": None}]
     if donante:
         d["donante_nombre"] = donante["nombre"]
         d["donante_telefono"] = donante["telefono"]

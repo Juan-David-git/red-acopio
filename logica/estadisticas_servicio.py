@@ -150,8 +150,10 @@ def del_centro(id_centro):
     # articulos que mas han llegado
     articulos = {}
     for d in llegadas:
-        nombre = d["articulo"].strip().lower()
-        articulos[nombre] = articulos.get(nombre, 0) + d["cantidad"]
+        # una donacion puede traer varios articulos; las viejas traen uno solo
+        for item in d.get("articulos") or [{"articulo": d["articulo"], "cantidad": d["cantidad"]}]:
+            nombre = item["articulo"].strip().lower()
+            articulos[nombre] = articulos.get(nombre, 0) + item["cantidad"]
     top = sorted(({"articulo": a, "valor": v} for a, v in articulos.items()), key=lambda x: -x["valor"])[:5]
 
     recibido_mes = _por_mes(llegadas, "fecha_entrega", "cantidad")

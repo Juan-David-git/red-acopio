@@ -60,6 +60,7 @@ class Manejador(BaseHTTPRequestHandler):
                     if usuario["rol"] == "conductor":
                         respuesta["disponible"] = usuario.get("disponible", False)
                         respuesta["franjas"] = usuario.get("franjas", [])
+                        respuesta["dias"] = usuario.get("dias", ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"])
                         # su punto de partida y hasta donde puede ir (para ordenar por cercania)
                         respuesta["zona_latitud"] = usuario.get("zona_latitud")
                         respuesta["zona_longitud"] = usuario.get("zona_longitud")
@@ -103,6 +104,11 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     self.responder_json(200, centros_servicio.salidas(usuario["id"]))
 
+            elif ruta == "/api/mi-centro/zona":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.zona(usuario["id"]))
+
             # ----- perfil (cualquier usuario con sesion) -----
             elif ruta == "/api/perfil":
                 usuario = self.usuario_actual()
@@ -129,7 +135,7 @@ class Manejador(BaseHTTPRequestHandler):
                 self.servir_archivo(ruta)
 
         except ErrorNegocio as e:
-            self.responder_json(400, {"error": str(e)})
+            self.responder_json(400, self.error_json(e))
         except (AttributeError, TypeError, ValueError, KeyError):
             # llego algo con un tipo raro (ej: un numero donde iba texto)
             self.responder_json(400, {"error": "Los datos enviados no son válidos."})
@@ -153,17 +159,15 @@ class Manejador(BaseHTTPRequestHandler):
             datos = self.leer_json()
 
             # ----- registro e inicio de sesion -----
-            if ruta == "/api/registro/donante":
-                registrar_donante(datos)
-                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
-
-            elif ruta == "/api/registro/conductor":
-                registrar_conductor(datos)
-                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
-
-            elif ruta == "/api/registro/centro":
-                registrar_centro(datos)
-                self.responder_json(201, {"mensaje": "¡Centro de acopio registrado! Ya puede iniciar sesión."})
+            # CU-01: al registrarse queda con la sesion abierta y entra directo a su panel
+            if ruta in ("/api/registro/donante", "/api/registro/conductor", "/api/registro/centro"):
+                registrar = {"donante": registrar_donante, "conductor": registrar_conductor,
+                             "centro": registrar_centro}[partes[3]]
+                usuario = registrar(datos)
+                token = seguridad.crear_sesion(usuario["id"])
+                cookie = "sesion=" + token + "; Path=/; HttpOnly; SameSite=Lax"
+                self.responder_json(201, {"mensaje": "¡Registro exitoso! Bienvenido a Red Acopio.",
+                                          "nombre": usuario["nombre"], "rol": usuario["rol"]}, cookie)
 
             elif ruta == "/api/login":
                 usuario = iniciar_sesion(datos.get("correo", ""), datos.get("clave", ""))
@@ -207,7 +211,8 @@ class Manejador(BaseHTTPRequestHandler):
             elif ruta == "/api/disponibilidad":
                 usuario = self.exigir_rol("conductor")
                 if usuario:
-                    actualizar_disponibilidad(usuario["id"], datos.get("disponible", False), datos.get("franjas", []))
+                    actualizar_disponibilidad(usuario["id"], datos.get("disponible", False),
+                                              datos.get("franjas", []), datos.get("dias"))
                     self.responder_json(200, {"mensaje": "Horarios guardados."})
 
             # ----- centro de acopio: actualizar horario, capacidad y necesidades -----
@@ -235,7 +240,7 @@ class Manejador(BaseHTTPRequestHandler):
                 if accion == "cancelar":
                     usuario = self.exigir_rol("donante")
                     if usuario:
-                        donaciones_servicio.cancelar(usuario["id"], id_donacion)
+                        donaciones_servicio.cancelar(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "La donación fue cancelada."})
 
                 elif accion == "aceptar":
@@ -247,13 +252,13 @@ class Manejador(BaseHTTPRequestHandler):
                 elif accion == "completar":
                     usuario = self.exigir_rol("conductor")
                     if usuario:
-                        donaciones_servicio.marcar_entregada(usuario["id"], id_donacion)
+                        donaciones_servicio.marcar_entregada(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "Entrega registrada. ¡Gracias por ayudar!"})
 
                 elif accion == "recibir":
                     usuario = self.exigir_rol("gestor")
                     if usuario:
-                        centros_servicio.confirmar_recepcion(usuario["id"], id_donacion)
+                        centros_servicio.confirmar_recepcion(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "Donación recibida. ¡Quedó registrada en su centro!"})
 
                 else:
@@ -263,7 +268,7 @@ class Manejador(BaseHTTPRequestHandler):
                 self.responder_json(404, {"error": "Ruta no encontrada."})
 
         except ErrorNegocio as e:
-            self.responder_json(400, {"error": str(e)})
+            self.responder_json(400, self.error_json(e))
         except (AttributeError, TypeError, ValueError, KeyError):
             # llego algo con un tipo raro (ej: un numero donde iba texto)
             self.responder_json(400, {"error": "Los datos enviados no son válidos."})
@@ -316,6 +321,15 @@ class Manejador(BaseHTTPRequestHandler):
         if not isinstance(datos, dict):
             raise ErrorNegocio("Los datos enviados no son válidos.")
         return datos
+
+    def error_json(self, e):
+        # el mensaje, y si aplica, el campo a resaltar y un enlace que ayuda
+        respuesta = {"error": str(e)}
+        if e.campo:
+            respuesta["campo"] = e.campo
+        if e.accion:
+            respuesta["accion"] = e.accion
+        return respuesta
 
     def responder_json(self, codigo, datos, cookie=None):
         # convierte el diccionario a JSON y lo envia
