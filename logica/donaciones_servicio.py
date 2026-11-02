@@ -8,6 +8,8 @@ from logica.estados import ahora, estado_de
 from logica.usuarios_servicio import CATEGORIAS
 from logica.ubicacion import leer_punto
 
+MODALIDADES = ["recogida", "personal"]
+
 
 # ======================= DONANTE =======================
 
@@ -29,12 +31,23 @@ def publicar(id_donante, datos):
         raise ErrorNegocio("Escriba qué artículo va a donar.")
     if cantidad <= 0:
         raise ErrorNegocio("La cantidad debe ser mayor que cero.")
-    if direccion == "":
-        raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+    # como llega al centro: "recogida" (la recoge un conductor) o "personal" (la lleva el donante)
+    modalidad = datos.get("modalidad", "recogida")
+    if modalidad not in MODALIDADES:
+        raise ErrorNegocio("Escoja si la recogen o si usted la lleva al centro.")
 
-    # punto de recogida marcado en el mapa (opcional: si no hay internet
-    # el mapa no carga, y la donacion igual se puede publicar con la direccion)
-    latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
+    if modalidad == "recogida":
+        if direccion == "":
+            raise ErrorNegocio("Escriba la dirección donde se recoge la donación.")
+        # punto de recogida marcado en el mapa (opcional: si no hay internet
+        # el mapa no carga, y la donacion igual se puede publicar con la direccion)
+        latitud, longitud = leer_punto(datos.get("latitud_recogida"), datos.get("longitud_recogida"), obligatorio=False)
+        cuando = ""
+    else:
+        # la lleva el mismo: no hace falta direccion ni mapa
+        direccion = ""
+        latitud, longitud = None, None
+        cuando = str(datos.get("cuando_llevara", "")).strip()[:80]   # opcional: "el sábado en la mañana"
 
     centro = repo.centros.buscar_por_id(id_centro)
     if centro is None:
@@ -61,7 +74,10 @@ def publicar(id_donante, datos):
         "direccion_recogida": direccion,
         "latitud_recogida": latitud,
         "longitud_recogida": longitud,
-        "estado": "publicada",
+        "modalidad": modalidad,
+        "cuando_llevara": cuando,
+        # si la lleva el mismo, no espera conductor: queda "por llevar"
+        "estado": "publicada" if modalidad == "recogida" else "por llevar",
         "id_conductor": None,
         "fecha_publicacion": ahora(),
         "fecha_ultimo_cambio": ahora(),
@@ -166,14 +182,38 @@ def confirmar_recepcion(id_gestor, id_donacion):
     return donacion
 
 
-def ocupacion_del_centro(id_centro):
-    # cuantos articulos tiene comprometidos el centro:
-    # lo publicado, en camino o ya recibido (lo cancelado no cuenta)
-    ocupado = 0
+def inventario_del_centro(id_centro):
+    # numeros del centro:
+    #   recibido:   todo lo que ha llegado
+    #   repartido:  lo que ya entrego a las familias
+    #   en_bodega:  recibido - repartido (lo que tiene guardado ahora)
+    #   en_camino:  publicado o en camino hacia el centro (ya comprometido)
+    #   ocupado:    en_bodega + en_camino  -> esto es lo que cuenta contra la capacidad
+    recibido = 0
+    en_camino = 0
     for d in repo.donaciones.buscar_por("id_centro", id_centro):
-        if d["estado"] != "cancelada":
-            ocupado += d["cantidad"]
-    return ocupado
+        if d["estado"] == "recibida":
+            recibido += d["cantidad"]
+        elif d["estado"] in ("publicada", "en camino", "por llevar"):
+            en_camino += d["cantidad"]
+
+    repartido = 0
+    for s in repo.salidas.buscar_por("id_centro", id_centro):
+        repartido += s["cantidad"]
+
+    en_bodega = max(0, recibido - repartido)
+    return {
+        "recibido": recibido,
+        "repartido": repartido,
+        "en_bodega": en_bodega,
+        "en_camino": en_camino,
+        "ocupado": en_bodega + en_camino
+    }
+
+
+def ocupacion_del_centro(id_centro):
+    # cuantos articulos cuentan contra la capacidad del centro
+    return inventario_del_centro(id_centro)["ocupado"]
 
 
 def donaciones_del_centro(id_centro):
@@ -182,7 +222,7 @@ def donaciones_del_centro(id_centro):
     recibidas = []
     for d in lista:
         _agregar_detalle(d)
-        if d["estado"] in ("publicada", "en camino"):
+        if d["estado"] in ("publicada", "en camino", "por llevar"):
             por_llegar.append(d)
         elif d["estado"] == "recibida":
             recibidas.append(d)
@@ -206,6 +246,7 @@ def _agregar_detalle(d):
         d["centro_nombre"] = centro["nombre"]
         d["centro_direccion"] = centro["direccion"] + ", " + centro["barrio"] + ", " + centro["ciudad"]
         # para dibujar el recorrido en el mapa
+        d["centro_horario"] = centro.get("horario", "")
         d["centro_latitud"] = centro.get("latitud")
         d["centro_longitud"] = centro.get("longitud")
     if donante:

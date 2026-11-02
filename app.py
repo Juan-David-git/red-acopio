@@ -1,4 +1,5 @@
 import os
+import traceback
 import json
 import webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -13,6 +14,8 @@ from logica.usuarios_servicio import (
 )
 from logica import donaciones_servicio
 from logica import centros_servicio
+from logica import estadisticas_servicio
+from logica import perfil_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -57,11 +60,15 @@ class Manejador(BaseHTTPRequestHandler):
                     if usuario["rol"] == "conductor":
                         respuesta["disponible"] = usuario.get("disponible", False)
                         respuesta["franjas"] = usuario.get("franjas", [])
+                        # su punto de partida y hasta donde puede ir (para ordenar por cercania)
+                        respuesta["zona_latitud"] = usuario.get("zona_latitud")
+                        respuesta["zona_longitud"] = usuario.get("zona_longitud")
+                        respuesta["radio_km"] = usuario.get("radio_km", 5)
                     self.responder_json(200, respuesta)
 
             # lista de centros (cualquiera la puede ver)
             elif ruta == "/api/centros":
-                self.responder_json(200, repo.centros.listar())
+                self.responder_json(200, centros_servicio.listar_publico())
 
             # ----- donante -----
             elif ruta == "/api/mis-donaciones":
@@ -91,12 +98,45 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     self.responder_json(200, centros_servicio.donaciones(usuario["id"]))
 
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.salidas(usuario["id"]))
+
+            # ----- perfil (cualquier usuario con sesion) -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    self.responder_json(200, perfil_servicio.ver(usuario["id"]))
+
+            # ----- estadisticas de cada panel -----
+            elif ruta == "/api/mis-estadisticas":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                elif usuario["rol"] == "donante":
+                    self.responder_json(200, estadisticas_servicio.del_donante(usuario["id"]))
+                elif usuario["rol"] == "conductor":
+                    self.responder_json(200, estadisticas_servicio.del_conductor(usuario["id"]))
+                else:
+                    centro = centros_servicio.centro_del_gestor(usuario["id"])
+                    self.responder_json(200, estadisticas_servicio.del_centro(centro["id"]))
+
             # si no es de la API, es un archivo (html, css, js)
             else:
                 self.servir_archivo(ruta)
 
         except ErrorNegocio as e:
             self.responder_json(400, {"error": str(e)})
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- POST: el navegador envia datos ----------
     def do_POST(self):
@@ -139,8 +179,29 @@ class Manejador(BaseHTTPRequestHandler):
             elif ruta == "/api/donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
-                    donaciones_servicio.publicar(usuario["id"], datos)
-                    self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
+                    donacion = donaciones_servicio.publicar(usuario["id"], datos)
+                    if donacion["modalidad"] == "personal":
+                        mensaje = "¡Listo! El centro ya sabe que usted le llevará la donación. Cuando la entregue, ellos la confirman."
+                    else:
+                        mensaje = "¡Su donación fue publicada! Un conductor la recogerá pronto."
+                    self.responder_json(201, {"mensaje": mensaje})
+
+            # ----- perfil -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil = perfil_servicio.actualizar(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Sus datos quedaron guardados.", "perfil": perfil})
+
+            elif ruta == "/api/perfil/clave":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil_servicio.cambiar_clave(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Su contraseña fue cambiada."})
 
             # ----- conductor: horarios (RF020) -----
             elif ruta == "/api/disponibilidad":
@@ -155,6 +216,12 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     centro = centros_servicio.actualizar(usuario["id"], datos)
                     self.responder_json(200, {"mensaje": "Datos del centro guardados.", "centro": centro})
+
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    centros_servicio.registrar_salida(usuario["id"], datos)
+                    self.responder_json(201, {"mensaje": "Entrega registrada. ¡Gracias por llevar la ayuda a las familias!"})
 
             # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
             elif len(partes) == 5 and partes[2] == "donaciones":
@@ -197,6 +264,13 @@ class Manejador(BaseHTTPRequestHandler):
 
         except ErrorNegocio as e:
             self.responder_json(400, {"error": str(e)})
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- ayudas ----------
     def servir_archivo(self, ruta):
@@ -221,6 +295,10 @@ class Manejador(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header("Content-Type", tipo)
+        # que el navegador pregunte siempre por la version nueva (si no, despues de
+        # cambiar un .js o .css puede seguir usando el viejo guardado en cache)
+        if extension in (".html", ".css", ".js"):
+            self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(contenido)
 
@@ -281,5 +359,6 @@ class Manejador(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
     print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+    print("Ojo: si cambia archivos .py, detenga el servidor y vuelva a ejecutar python app.py")
     webbrowser.open("http://localhost:8000")
     servidor.serve_forever()

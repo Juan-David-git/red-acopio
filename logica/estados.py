@@ -1,6 +1,8 @@
 # Estados de una donacion (patron State)
-# publicada -> en camino -> recibida
+# publicada -> en camino -> recibida      (la recoge un conductor)
 # publicada -> cancelada
+# por llevar -> recibida                  (el donante la lleva personalmente)
+# por llevar -> cancelada
 # cada estado solo deja hacer lo que le corresponde
 
 from datetime import datetime
@@ -50,6 +52,21 @@ class EnCamino(EstadoDonacion):
         donacion["fecha_ultimo_cambio"] = ahora()
 
 
+class PorLlevar(EstadoDonacion):
+    # el donante la lleva el mismo al centro: no pasa por ningun conductor
+    nombre = "por llevar"
+
+    def completar(self, donacion):
+        # la confirma el centro cuando el donante llega
+        donacion["estado"] = "recibida"
+        donacion["fecha_entrega"] = ahora()
+        donacion["fecha_ultimo_cambio"] = ahora()
+
+    def cancelar(self, donacion):
+        donacion["estado"] = "cancelada"
+        donacion["fecha_ultimo_cambio"] = ahora()
+
+
 class Recibida(EstadoDonacion):
     nombre = "recibida"
     # estado final: no permite nada (usa lo de la clase padre)
@@ -67,6 +84,7 @@ class Cancelada(EstadoDonacion):
 ESTADOS = {
     "publicada": Publicada(),
     "en camino": EnCamino(),
+    "por llevar": PorLlevar(),
     "recibida": Recibida(),
     "cancelada": Cancelada(),
 }

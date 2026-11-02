@@ -15,10 +15,14 @@
       <svg aria-hidden="true"><use href="#i-logo"></use></svg>
       <span>Red<em>Acopio</em></span>
     </a>
-    <div class="usuario">
+    <a class="usuario" href="/perfil.html" title="Mi perfil">
       <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
       <span id="nombre-usuario"></span>
-    </div>
+    </a>
+    <a class="boton-salir" href="/centros.html" title="Centros de acopio">
+      <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+      <span>Centros</span>
+    </a>
     <button id="boton-salir" class="boton-salir" type="button">
       <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
       <span>Salir</span>
@@ -34,6 +38,9 @@
       </button>
       <button type="button" data-seccion="seccion-mis">
         <svg class="ico" aria-hidden="true"><use href="#i-caja"></use></svg> Mis donaciones
+      </button>
+      <button type="button" data-seccion="seccion-resumen">
+        <svg class="ico" aria-hidden="true"><use href="#i-grafica"></use></svg> Resumen
       </button>
     </div>
 
@@ -76,6 +83,7 @@
           <option value="">Primero escoja la categoría…</option>
         </select>
         <p class="ayuda" id="necesita"></p>
+        <p class="ayuda"><a href="/centros.html" target="_blank">Ver todos los centros y qué tan llenos están</a></p>
 
         <label for="articulo">
           <svg class="ico" aria-hidden="true"><use href="#i-lista"></use></svg>
@@ -95,27 +103,63 @@
         </label>
         <input type="text" id="descripcion" placeholder="Ej: bolsas de 1 kg, talla 8">
 
-        <label for="direccion_recogida">
-          <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
-          Dirección donde se recoge
+        <!-- ===== como llega la donacion al centro ===== -->
+        <label>
+          <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg>
+          ¿Cómo llega la donación al centro?
         </label>
-        <div class="campo-icono">
-          <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
-          <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
+        <input type="hidden" id="modalidad" value="recogida">
+        <div class="modalidades" role="radiogroup" aria-label="Cómo llega la donación al centro">
+          <button type="button" class="modalidad activa" data-modalidad="recogida" role="radio" aria-checked="true">
+            <svg class="ico" aria-hidden="true"><use href="#i-camion"></use></svg>
+            <strong>Que la recojan</strong>
+            <span>Un conductor voluntario pasa por ella</span>
+          </button>
+          <button type="button" class="modalidad" data-modalidad="personal" role="radio" aria-checked="false">
+            <svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg>
+            <strong>Yo la llevo</strong>
+            <span>La dejo personalmente en el centro</span>
+          </button>
         </div>
 
-        <label>
-          <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
-          Marque en el mapa dónde se recoge
-        </label>
-        <p class="ayuda" style="margin: 0 0 10px">Toque el mapa en el lugar exacto. Así el conductor llega sin perderse.</p>
-        <div id="mapa-recogida" class="mapa mapa-elegir" aria-label="Mapa para marcar el punto de recogida"></div>
-        <div class="mapa-herramientas">
-          <button type="button" id="boton-ubicacion" class="boton secundario">
+        <!-- si la recogen: direccion y punto en el mapa -->
+        <div id="bloque-recogida">
+          <label for="direccion_recogida">
+            <svg class="ico" aria-hidden="true"><use href="#i-casa"></use></svg>
+            Dirección donde se recoge
+          </label>
+          <div class="campo-icono">
             <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
-            Usar mi ubicación
-          </button>
-          <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+            <input type="text" id="direccion_recogida" placeholder="Calle 45 # 12-20, Bucaramanga" autocomplete="street-address">
+          </div>
+
+          <label>
+            <svg class="ico" aria-hidden="true"><use href="#i-ruta"></use></svg>
+            Marque en el mapa dónde se recoge
+          </label>
+          <p class="ayuda" style="margin: 0 0 10px">Toque el mapa en el lugar exacto. Así el conductor llega sin perderse.</p>
+          <div id="mapa-recogida" class="mapa mapa-elegir" aria-label="Mapa para marcar el punto de recogida"></div>
+          <div class="mapa-herramientas">
+            <button type="button" id="boton-ubicacion" class="boton secundario">
+              <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+              Usar mi ubicación
+            </button>
+            <p id="estado-punto" class="mapa-estado">Todavía no ha marcado el punto.</p>
+          </div>
+        </div>
+
+        <!-- si la lleva el donante: a donde y cuando -->
+        <div id="bloque-personal" class="oculto">
+          <div id="info-centro-personal" class="info-centro">
+            <p class="ayuda">Escoja primero el centro de acopio para ver su dirección y horario.</p>
+          </div>
+
+          <label for="cuando_llevara">
+            <svg class="ico" aria-hidden="true"><use href="#i-calendario"></use></svg>
+            ¿Cuándo piensa llevarla? <small>(opcional)</small>
+          </label>
+          <input type="text" id="cuando_llevara" maxlength="80" placeholder="Ej: el sábado en la mañana">
+          <p class="ayuda">Así el centro sabe cuándo esperarlo.</p>
         </div>
 
         <button type="submit" class="boton ancho" style="margin-top: 28px">
@@ -123,6 +167,11 @@
           Publicar donación
         </button>
       </form>
+    </section>
+
+    <!-- ===== RESUMEN / ESTADISTICAS (lo dibuja estadisticas.js) ===== -->
+    <section id="seccion-resumen" class="oculto">
+      <div id="resumen"></div>
     </section>
 
     <!-- ===== MIS DONACIONES (RF010 y RF016) ===== -->
@@ -135,6 +184,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/mapa.js"></script>
+  <script src="/js/estadisticas.js"></script>
   <script src="/js/donante.js"></script>
 </body>
 </html>

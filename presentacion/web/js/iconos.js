@@ -36,6 +36,7 @@
     "ciudad": '<g ' + L + '><path d="M3 20h18M5 20V9l5-3v14M10 20V4h9v16M13 8h3M13 12h3M13 16h3"/></g>',
     "vehiculo": '<g ' + L + '><path d="M3 16v-4l2-5h14l2 5v4z"/><path d="M3 12h18"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/></g>',
     "ruta": '<g ' + L + '><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H16a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h7.5"/></g>',
+    "grafica": '<path ' + L + ' d="M4 20h16M7 16v-4M12 16V6M17 16V9"/>',
     "info": '<g ' + L + '><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></g>',
         "ojo": '<g ' + L + '><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g>',
     "ojo-cerrado": '<g ' + L + '><path d="m3 3 18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6A17.6 17.6 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></g>',

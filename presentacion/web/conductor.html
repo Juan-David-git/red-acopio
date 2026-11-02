@@ -15,10 +15,14 @@
       <svg aria-hidden="true"><use href="#i-logo"></use></svg>
       <span>Red<em>Acopio</em></span>
     </a>
-    <div class="usuario">
+    <a class="usuario" href="/perfil.html" title="Mi perfil">
       <span class="avatar"><svg class="ico" aria-hidden="true"><use href="#i-usuario"></use></svg></span>
       <span id="nombre-usuario"></span>
-    </div>
+    </a>
+    <a class="boton-salir" href="/centros.html" title="Centros de acopio">
+      <svg class="ico" aria-hidden="true"><use href="#i-centro"></use></svg>
+      <span>Centros</span>
+    </a>
     <button id="boton-salir" class="boton-salir" type="button">
       <svg class="ico" aria-hidden="true"><use href="#i-salir"></use></svg>
       <span>Salir</span>
@@ -38,6 +42,9 @@
       <button type="button" data-seccion="seccion-horarios">
         <svg class="ico" aria-hidden="true"><use href="#i-reloj"></use></svg> Horarios
       </button>
+      <button type="button" data-seccion="seccion-resumen">
+        <svg class="ico" aria-hidden="true"><use href="#i-grafica"></use></svg> Resumen
+      </button>
     </div>
 
     <div id="mensaje" class="mensaje" role="alert"></div>
@@ -45,6 +52,22 @@
     <!-- ===== POR RECOGER: donaciones publicadas ===== -->
     <section id="seccion-recoger">
       <p class="subtitulo">Donaciones esperando conductor. Si puede llevar una, toque «Aceptar recogida».</p>
+
+      <!-- cercania: desde su punto de partida (perfil) o su ubicacion de ahora -->
+      <div class="filtro-zona tarjeta">
+        <p id="texto-zona" class="mapa-estado"></p>
+        <div class="filtro-zona-controles">
+          <div class="chips" role="group" aria-label="Qué donaciones mostrar">
+            <button type="button" class="chip activa" data-alcance="cerca">Cerca de mí</button>
+            <button type="button" class="chip" data-alcance="todas">Todas</button>
+          </div>
+          <button type="button" id="boton-aqui" class="boton secundario">
+            <svg class="ico" aria-hidden="true"><use href="#i-pin"></use></svg>
+            Usar dónde estoy ahora
+          </button>
+        </div>
+      </div>
+
       <div id="lista-recoger"></div>
     </section>
 
@@ -61,6 +84,11 @@
         Entregas completadas
       </h2>
       <div id="lista-completadas"></div>
+    </section>
+
+    <!-- ===== RESUMEN / ESTADISTICAS (lo dibuja estadisticas.js) ===== -->
+    <section id="seccion-resumen" class="oculto">
+      <div id="resumen"></div>
     </section>
 
     <!-- ===== HORARIOS (RF020) ===== -->
@@ -101,6 +129,7 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/comun.js"></script>
   <script src="/js/mapa.js"></script>
+  <script src="/js/estadisticas.js"></script>
   <script src="/js/conductor.js"></script>
 </body>
 </html>
