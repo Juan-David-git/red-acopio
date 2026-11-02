@@ -17,6 +17,7 @@ async function iniciar() {
     return;
   }
   document.getElementById("nombre-usuario").textContent = conductor.nombre;
+  iniciarZona();
 
   cargarPorRecoger();
 }
@@ -72,22 +73,112 @@ function contactoDonante(d) {
 }
 
 // ---------- POR RECOGER ----------
+// ---------- cercania (filtrar por zona) ----------
+let puntoPartida = null;      // [lat, lon] desde donde se miden las distancias
+let origenPunto = "";         // "perfil" o "ahora"
+let alcance = "cerca";        // "cerca" (dentro del radio) o "todas"
+
+function iniciarZona() {
+  if (conductor.zona_latitud != null && conductor.zona_longitud != null) {
+    puntoPartida = [conductor.zona_latitud, conductor.zona_longitud];
+    origenPunto = "perfil";
+  }
+  pintarTextoZona();
+}
+
+function pintarTextoZona() {
+  const texto = document.getElementById("texto-zona");
+  const radio = conductor.radio_km || 5;
+  if (!puntoPartida) {
+    texto.className = "mapa-estado";
+    texto.innerHTML = icono("info") + '<span>Para ver primero las más cercanas, marque su punto de partida en <a href="/perfil.html">Mi perfil</a> o use dónde está ahora.</span>';
+  } else {
+    texto.className = "mapa-estado listo";
+    texto.innerHTML = icono("pin") + "<span>Ordenadas por cercanía a " +
+      (origenPunto === "ahora" ? "donde está ahora" : "su punto de partida") +
+      ". «Cerca de mí» = hasta " + radio + " km.</span>";
+  }
+}
+
+document.querySelectorAll("[data-alcance]").forEach(function (chip) {
+  chip.addEventListener("click", function () {
+    document.querySelectorAll("[data-alcance]").forEach(function (c) { c.classList.remove("activa"); });
+    chip.classList.add("activa");
+    alcance = chip.dataset.alcance;
+    pintarPorRecoger();
+  });
+});
+
+document.getElementById("boton-aqui").addEventListener("click", function () {
+  const boton = this;
+  if (!navigator.geolocation) {
+    mostrarMensaje("Su navegador no permite saber su ubicación.", "error");
+    return;
+  }
+  boton.disabled = true;
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    boton.disabled = false;
+    puntoPartida = [pos.coords.latitude, pos.coords.longitude];
+    origenPunto = "ahora";
+    pintarTextoZona();
+    pintarPorRecoger();
+  }, function () {
+    boton.disabled = false;
+    mostrarMensaje("No pudimos obtener su ubicación. Revise el permiso del navegador.", "error");
+  }, { enableHighAccuracy: true, timeout: 10000 });
+});
+
+// distancia del conductor al punto de recogida (null si no se puede saber)
+function distanciaA(d) {
+  if (!puntoPartida || d.latitud_recogida == null || d.longitud_recogida == null) return null;
+  return distanciaKm(puntoPartida, [d.latitud_recogida, d.longitud_recogida]);
+}
+
+// ---------- POR RECOGER ----------
 async function cargarPorRecoger() {
-  const contenedor = document.getElementById("lista-recoger");
   const r = await pedirApi("/api/donaciones/disponibles");
   if (!r.ok) return;
-  const lista = r.datos;
+  porRecoger = r.datos;
+  pintarPorRecoger();
+}
 
-  porRecoger = lista;
-
-  if (lista.length === 0) {
+function pintarPorRecoger() {
+  const contenedor = document.getElementById("lista-recoger");
+  if (porRecoger.length === 0) {
     contenedor.innerHTML = '<p class="vacio">No hay donaciones esperando conductor en este momento. 🙌</p>';
     return;
   }
 
+  // calcular distancias y ordenar: primero las mas cercanas, al final las que no tienen punto
+  let lista = porRecoger.map(function (d) { d.distancia = distanciaA(d); return d; });
+  if (puntoPartida) {
+    lista.sort(function (a, b) {
+      if (a.distancia == null) return 1;
+      if (b.distancia == null) return -1;
+      return a.distancia - b.distancia;
+    });
+  }
+
+  // "Cerca de mi": solo las que estan dentro del radio (las que no tienen punto no se pueden medir)
+  let ocultas = 0;
+  if (puntoPartida && alcance === "cerca") {
+    const radio = conductor.radio_km || 5;
+    const cerca = lista.filter(function (d) { return d.distancia != null && d.distancia <= radio; });
+    ocultas = lista.length - cerca.length;
+    lista = cerca;
+  }
+
   let html = "";
+  if (lista.length === 0) {
+    html += '<p class="vacio">No hay donaciones dentro de ' + (conductor.radio_km || 5) + " km. Toque «Todas» para ver las demás.</p>";
+  }
   lista.forEach(function (d) {
     html += tarjeta(d);
+    if (d.distancia != null) {
+      html += '<p class="dato dato-distancia">' + icono("ruta") + "<span>A " + formatoKm(d.distancia) + " de usted</span></p>";
+    } else if (puntoPartida) {
+      html += dato("info", "Sin punto en el mapa: revise la dirección");
+    }
     html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
     html += '</div><div class="donacion-acciones">';
     // antes de aceptar puede ver que tan lejos queda
@@ -97,6 +188,9 @@ async function cargarPorRecoger() {
     html += '<div class="donacion-mapa oculto"></div>';
     html += "</div>";
   });
+  if (ocultas > 0 && lista.length > 0) {
+    html += '<p class="ayuda centrado">Hay ' + ocultas + " donación" + (ocultas === 1 ? "" : "es") + " más lejos. Toque «Todas» para verlas.</p>";
+  }
   contenedor.innerHTML = html;
 }
 
@@ -161,6 +255,7 @@ async function completar(id) {
   if (!confirm("¿Confirma que ya entregó esta donación en el centro de acopio?")) {
     return;
   }
+  completadasPorMi.add(id);   // para no avisarle de su propia accion
   const r = await enviarJson("/api/donaciones/" + id + "/completar");
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
@@ -194,5 +289,58 @@ document.getElementById("form-horarios").addEventListener("submit", async functi
   }
 });
 
+// ---------- avisos automaticos ----------
+// - donaciones nuevas esperando conductor
+// - el centro confirmo una entrega que usted llevaba
+let disponiblesConocidas = null;   // ids que ya habia visto en "Recoger"
+let completadasConocidas = null;   // ids de sus entregas ya completadas
+const completadasPorMi = new Set(); // las que usted mismo marco como entregadas (no se avisan)
+
+function abrirPestana(seccion) {
+  document.querySelector('.pestanas [data-seccion="' + seccion + '"]').click();
+}
+
+async function revisarCambios() {
+  // 1. donaciones nuevas para recoger
+  const disponibles = await pedirEnSilencio("/api/donaciones/disponibles");
+  if (disponibles) {
+    const ids = disponibles.map(function (d) { return d.id; });
+    if (disponiblesConocidas) {
+      const nuevas = disponibles.filter(function (d) { return !disponiblesConocidas.has(d.id); });
+      if (nuevas.length) {
+        const texto = nuevas.length === 1
+          ? "Hay una donación nueva para recoger: " + nuevas[0].cantidad + " × " + nuevas[0].articulo + "."
+          : "Hay " + nuevas.length + " donaciones nuevas para recoger.";
+        mostrarAviso(texto, "caja", { texto: "Ver", alTocar: function () { abrirPestana("seccion-recoger"); } });
+      }
+      // la lista se refresca sola si la esta mirando (y no tiene un mapa abierto)
+      const cambio = nuevas.length || ids.length !== disponiblesConocidas.size;
+      if (cambio && seccionVisible("seccion-recoger") && !hayMapaAbierto("seccion-recoger")) {
+        porRecoger = disponibles;
+        pintarPorRecoger();
+      }
+    }
+    disponiblesConocidas = new Set(ids);
+  }
+
+  // 2. el centro confirmo una de sus entregas
+  const entregas = await pedirEnSilencio("/api/mis-entregas");
+  if (entregas) {
+    if (completadasConocidas) {
+      entregas.completadas.forEach(function (d) {
+        // una entrega que aparece como completada y que usted no marco: la confirmo el centro
+        if (!completadasConocidas.has(d.id) && !completadasPorMi.has(d.id)) {
+          mostrarAviso("El centro " + d.centro_nombre + " confirmó que recibió " + d.cantidad + " × " + d.articulo + ". ¡Gracias!", "check",
+            { texto: "Ver", alTocar: function () { abrirPestana("seccion-entregas"); } });
+          if (seccionVisible("seccion-entregas") && !hayMapaAbierto("seccion-entregas")) cargarEntregas();
+        }
+      });
+    }
+    completadasConocidas = new Set(entregas.completadas.map(function (d) { return d.id; }));
+  }
+}
+
 activarBotonSalir();
 iniciar();
+revisarCambios();                       // primera foto de como estan
+revisarCadaCierto(revisarCambios, 20000);

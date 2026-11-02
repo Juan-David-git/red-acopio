@@ -122,3 +122,104 @@ function activarBotonSalir() {
     window.location.href = "/";
   });
 }
+
+// ---------- avisos automaticos ----------
+// mostrarAviso("Su donación va en camino", "camion", { texto: "Ver", alTocar: fn })
+// Aparece abajo de la pantalla y se va solo a los 8 segundos.
+function mostrarAviso(texto, nombreIcono, accion) {
+  let caja = document.getElementById("avisos");
+  if (!caja) {
+    caja = document.createElement("div");
+    caja.id = "avisos";
+    caja.className = "avisos";
+    caja.setAttribute("aria-live", "polite");
+    document.body.appendChild(caja);
+  }
+  const aviso = document.createElement("div");
+  aviso.className = "aviso";
+  aviso.innerHTML = icono(nombreIcono || "info") + '<span class="aviso-texto"></span>';
+  aviso.querySelector(".aviso-texto").textContent = texto;
+
+  if (accion) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.className = "aviso-boton";
+    boton.textContent = accion.texto;
+    boton.addEventListener("click", function () {
+      accion.alTocar();
+      aviso.remove();
+    });
+    aviso.appendChild(boton);
+  }
+  const cerrar = document.createElement("button");
+  cerrar.type = "button";
+  cerrar.className = "aviso-cerrar";
+  cerrar.setAttribute("aria-label", "Cerrar aviso");
+  cerrar.innerHTML = icono("equis");
+  cerrar.addEventListener("click", function () { aviso.remove(); });
+  aviso.appendChild(cerrar);
+
+  caja.appendChild(aviso);
+  setTimeout(function () { aviso.classList.add("saliendo"); }, 7600);
+  setTimeout(function () { aviso.remove(); }, 8000);
+
+  // numerito en la pestaña del navegador hasta que la persona vuelva a mirar
+  if (document.hidden) {
+    avisosSinVer++;
+    document.title = "(" + avisosSinVer + ") " + tituloOriginal;
+  }
+}
+
+let avisosSinVer = 0;
+const tituloOriginal = document.title;
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) {
+    avisosSinVer = 0;
+    document.title = tituloOriginal;
+  }
+});
+
+// Repite "revisar" cada tantos milisegundos, pero solo con la pagina a la vista
+// (si la persona cambia de pestaña, se pausa; al volver, revisa de una vez).
+function revisarCadaCierto(revisar, milisegundos) {
+  let reloj = null;
+  function arrancar() {
+    if (reloj) return;
+    reloj = setInterval(revisar, milisegundos);
+  }
+  function parar() {
+    clearInterval(reloj);
+    reloj = null;
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      parar();
+    } else {
+      revisar();
+      arrancar();
+    }
+  });
+  arrancar();
+}
+
+// ¿la seccion esta a la vista? (para refrescar la lista sin que la persona toque nada)
+function seccionVisible(id) {
+  const s = document.getElementById(id);
+  return s && !s.classList.contains("oculto");
+}
+
+// ¿hay un mapa de recorrido abierto? (si lo hay, no se redibuja la lista para no cerrarlo)
+function hayMapaAbierto(id) {
+  return Boolean(document.querySelector("#" + id + " .donacion-mapa:not(.oculto)"));
+}
+
+// pedir datos sin mostrar errores (para las revisiones automaticas)
+async function pedirEnSilencio(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) {
+    return null;
+  }
+}

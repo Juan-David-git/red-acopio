@@ -279,5 +279,43 @@ async function cancelar(id) {
   cargarDonaciones();
 }
 
+// ---------- avisos automaticos: cuando su donacion cambia de estado ----------
+let estadosConocidos = null;   // id de la donacion -> estado la ultima vez que se reviso
+
+function abrirPestana(seccion) {
+  document.querySelector('.pestanas [data-seccion="' + seccion + '"]').click();
+}
+
+async function revisarDonaciones() {
+  const lista = await pedirEnSilencio("/api/mis-donaciones");
+  if (!lista) return;
+
+  let huboCambio = false;
+  if (estadosConocidos) {
+    lista.forEach(function (d) {
+      // si no la conocia (la publico hace poco y cambio antes de revisar), se toma como "publicada"
+      const antes = estadosConocidos[d.id] || "publicada";
+      if (antes === d.estado) return;
+      huboCambio = true;
+      const que = d.cantidad + " × " + d.articulo;
+      const ver = { texto: "Ver", alTocar: function () { abrirPestana("seccion-mis"); } };
+      if (d.estado === "en camino") {
+        mostrarAviso("Un conductor va por su donación de " + que + ".", "camion", ver);
+      } else if (d.estado === "recibida") {
+        mostrarAviso("¡Su donación de " + que + " llegó a " + d.centro_nombre + "! Gracias.", "check", ver);
+      }
+    });
+  }
+  estadosConocidos = {};
+  lista.forEach(function (d) { estadosConocidos[d.id] = d.estado; });
+
+  // si esta mirando la lista, se actualiza sola (menos si tiene un mapa abierto)
+  if (huboCambio && seccionVisible("seccion-mis") && !hayMapaAbierto("seccion-mis")) {
+    cargarDonaciones();
+  }
+}
+
 activarBotonSalir();
 iniciar();
+revisarDonaciones();                       // primera foto de como estan
+revisarCadaCierto(revisarDonaciones, 20000);

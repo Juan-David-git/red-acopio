@@ -123,6 +123,17 @@ a:hover { color: var(--naranja-oscuro); }
   line-height: 1.15;
   min-width: 0;
 }
+a.usuario { text-decoration: none; border-radius: 999px; padding: 2px 10px 2px 2px; transition: background .2s; }
+a.usuario:hover { background: var(--petroleo-suave); color: var(--petroleo); }
+
+/* ---------- perfil ---------- */
+.perfil-cabeza { display: flex; align-items: center; gap: 16px; margin: 12px 0 18px; }
+.perfil-cabeza h1 { margin: 0; font-size: 1.8rem; }
+.perfil-cabeza .subtitulo { margin: 2px 0 0; }
+.avatar-grande { width: 64px !important; height: 64px !important; }
+.avatar-grande .ico { width: 30px; height: 30px; }
+input:disabled { background: var(--crema); color: var(--gris); }
+
 .usuario .avatar {
   width: 38px;
   height: 38px;
@@ -318,6 +329,8 @@ a:hover { color: var(--naranja-oscuro); }
 
 .tarjeta h2 { font-size: 1.25rem; margin: 28px 0 4px; }
 .tarjeta h2:first-child { margin-top: 0; }
+/* secciones que aparecen segun el rol (conductor, centro): su titulo si lleva espacio arriba */
+.tarjeta > div > h2:first-child { margin-top: 32px; }
 
 /* ---------- campos ---------- */
 label {
@@ -670,6 +683,66 @@ label.check input {
 .lugares li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radio-chico); background: var(--crema); }
 .lugares li .ico { color: var(--petroleo); margin-top: 3px; }
 .lugares small { display: block; color: var(--gris); font-size: .88rem; }
+
+/* ---------- cercanía del conductor ---------- */
+.filtro-zona { padding: 14px 16px; margin-bottom: 16px; }
+.filtro-zona .mapa-estado { align-items: flex-start; }
+.filtro-zona .mapa-estado .ico { margin-top: 2px; }
+.filtro-zona-controles { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 10px; }
+.filtro-zona .chips { margin: 0; }
+.filtro-zona .boton { min-height: 42px; padding: 6px 14px; font-size: .92rem; }
+.dato-distancia { color: var(--petroleo) !important; font-weight: 700; }
+
+/* ---------- avisos automáticos ---------- */
+.avisos {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px));
+  display: grid;
+  gap: 10px;
+  z-index: 1000;            /* por encima de los mapas */
+}
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 12px 12px 16px;
+  border-radius: 16px;
+  background: var(--petroleo);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(31, 57, 54, .3);
+  animation: subir .3s ease-out;
+  transition: opacity .4s, transform .4s;
+}
+.aviso > .ico { color: #F2A15F; width: 24px; height: 24px; }
+.aviso-texto { flex: 1; line-height: 1.35; }
+.aviso-boton {
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--naranja);
+  color: #fff;
+  font: 700 .92rem var(--cuerpo);
+  cursor: pointer;
+}
+.aviso-cerrar {
+  border: 0;
+  background: none;
+  color: #fff;
+  opacity: .75;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.aviso-cerrar:hover { opacity: 1; background: rgba(255, 255, 255, .12); }
+.aviso.saliendo { opacity: 0; transform: translateY(10px); }
+@keyframes subir { from { opacity: 0; transform: translateY(16px); } }
 
 /* ---------- página de centros ---------- */
 .contenedor-ancho { max-width: 1080px; }

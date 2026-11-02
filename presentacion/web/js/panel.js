@@ -167,6 +167,7 @@ async function recibir(id) {
   if (!confirm("¿Confirma que esta donación ya llegó a su centro?")) {
     return;
   }
+  recibidasPorMi.add(id);   // para no avisarle de su propia accion
   const r = await enviarJson("/api/donaciones/" + id + "/recibir");
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
@@ -294,5 +295,53 @@ function mostrarMapaMiCentro() {
   ponerMarcador(mapaMiCentro, punto, "centro", limpiar(centro.nombre));
 }
 
+// ---------- avisos automaticos: lo que viene para el centro ----------
+let llegadasConocidas = null;   // id -> estado de lo que viene o ya llego
+const recibidasPorMi = new Set();
+
+function abrirPestana(seccion) {
+  document.querySelector('.pestanas [data-seccion="' + seccion + '"]').click();
+}
+
+async function revisarLlegadas() {
+  const datos = await pedirEnSilencio("/api/mi-centro/donaciones");
+  if (!datos) return;
+  const todas = datos.por_llegar.concat(datos.recibidas);
+
+  let huboCambio = false;
+  if (llegadasConocidas) {
+    todas.forEach(function (d) {
+      const antes = llegadasConocidas[d.id];
+      const que = d.cantidad + " × " + d.articulo;
+      const ver = { texto: "Ver", alTocar: function () { abrirPestana("seccion-llegar"); } };
+      if (!antes) {
+        huboCambio = true;
+        mostrarAviso("Nueva donación para su centro: " + que + ".", "caja", ver);
+      } else if (antes !== d.estado) {
+        huboCambio = true;
+        if (d.estado === "en camino") {
+          mostrarAviso(que + " ya viene en camino" + (d.conductor_nombre ? " con " + d.conductor_nombre : "") + ".", "camion", ver);
+        } else if (d.estado === "recibida" && !recibidasPorMi.has(d.id)) {
+          mostrarAviso((d.conductor_nombre || "El conductor") + " entregó " + que + ". Ya está en bodega.", "check",
+            { texto: "Ver", alTocar: function () { abrirPestana("seccion-bodega"); } });
+        }
+      }
+    });
+    // alguna se cancelo o cambio: tambien hay que refrescar los numeros
+    if (Object.keys(llegadasConocidas).length !== todas.length) huboCambio = true;
+  }
+  llegadasConocidas = {};
+  todas.forEach(function (d) { llegadasConocidas[d.id] = d.estado; });
+
+  if (huboCambio) {
+    cargarCentro();   // cifras y barra de capacidad
+    if ((seccionVisible("seccion-llegar") && !hayMapaAbierto("seccion-llegar")) || seccionVisible("seccion-bodega")) {
+      cargarDonaciones();
+    }
+  }
+}
+
 activarBotonSalir();
 iniciar();
+revisarLlegadas();                       // primera foto de como estan
+revisarCadaCierto(revisarLlegadas, 20000);

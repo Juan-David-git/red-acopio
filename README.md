@@ -42,4 +42,6 @@ Trabaja sobre una copia temporal de los JSON, así que no cambia los datos reale
 - Página pública de centros (`centros.html`): cualquiera ve en el mapa lo que pide cada centro y qué tan lleno está.
 - Capacidad de los centros: cuenta lo que hay en bodega (recibido menos lo entregado a familias) más lo que viene en camino. Las entregas a familias se guardan en `datos/json/salidas.json`.
 - Cada panel tiene una pestaña de resumen con estadísticas (donante, conductor y centro).
+- Perfil (`perfil.html`, tocando el nombre arriba): cambiar datos y contraseña. El conductor marca su punto de partida y hasta qué distancia puede ir; con eso la lista "Recoger" muestra primero las donaciones más cercanas.
+- Avisos automáticos: cada 20 segundos (solo con la página a la vista) se revisa si algo cambió y aparece un aviso abajo.
 - Panel del centro (`panel.html`): el encargado ve lo que viene en camino y lo recibido, confirma la llegada de una donación (además del conductor) y actualiza horario, capacidad y necesidades. Si deja las necesidades vacías, el centro deja de aparecer para los donantes.
