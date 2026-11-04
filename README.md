@@ -12,6 +12,20 @@ python app.py
 
 Se abre solo el navegador en http://localhost:8000. Para detener el servidor: Ctrl + C.
 
+## Publicado en Render
+
+La página está publicada en Render como un *Web Service* gratuito:
+
+- **Build Command:** `pip install -r requirements.txt` (no instala nada: el proyecto solo usa Python)
+- **Start Command:** `python datos/semilla.py && python -u app.py`
+
+Cuando Render da la variable `PORT`, `app.py` escucha en ese puerto y no abre el navegador. En el computador sigue funcionando igual que siempre, en http://localhost:8000.
+
+Hay que tener en cuenta:
+
+- En el plan gratuito el servidor se duerme tras unos minutos sin visitas. La primera visita después tarda cerca de un minuto en responder.
+- Los archivos de Render no son permanentes: cada vez que se vuelve a publicar o se reinicia, los JSON vuelven a quedar como están en GitHub. Por eso el comando de inicio corre `semilla.py`, para que siempre estén las cuentas de demostración. Lo que se registre en la página publicada es de prueba y se puede perder.
+
 ## Estructura
 
 - `presentacion/web/` — páginas HTML, estilos y JavaScript (`js/comun.js` tiene las funciones compartidas).
