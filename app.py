@@ -371,8 +371,16 @@ class Manejador(BaseHTTPRequestHandler):
 # solo arranca si se ejecuta "python app.py"
 # (si otro archivo hace "import app", por ejemplo una prueba, no se lanza el servidor)
 if __name__ == "__main__":
-    servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
-    print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
-    print("Ojo: si cambia archivos .py, detenga el servidor y vuelva a ejecutar python app.py")
-    webbrowser.open("http://localhost:8000")
-    servidor.serve_forever()
+    # En Render (o cualquier hosting) llega la variable PORT: se escucha en todas las
+    # direcciones y no se abre navegador. En el computador queda como siempre: localhost:8000.
+    puerto = os.environ.get("PORT")
+    if puerto:
+        servidor = ThreadingHTTPServer(("0.0.0.0", int(puerto)), Manejador)
+        print("Servidor en linea, puerto " + puerto)
+        servidor.serve_forever()
+    else:
+        servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
+        print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+        print("Ojo: si cambia archivos .py, detenga el servidor y vuelva a ejecutar python app.py")
+        webbrowser.open("http://localhost:8000")
+        servidor.serve_forever()

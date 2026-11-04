@@ -1,0 +1,2 @@
+# Red Acopio no usa librerias externas: solo Python.
+# Render necesita este archivo para reconocer el proyecto como Python.
