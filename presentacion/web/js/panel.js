@@ -14,8 +14,7 @@ async function iniciar() {
     irAMiPanel(r.datos.rol);
     return;
   }
-  document.getElementById("nombre-usuario").textContent = r.datos.nombre;
-
+    document.getElementById("nombre-usuario").textContent = r.datos.nombre.split(" ")[0];  // solo el primer nombre
   await cargarCentro();
   cargarDonaciones();
   return true;

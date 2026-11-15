@@ -19,7 +19,7 @@ async function iniciar() {
     irAMiPanel(usuario.rol);
     return;
   }
-  document.getElementById("nombre-usuario").textContent = usuario.nombre;
+   document.getElementById("nombre-usuario").textContent = usuario.nombre.split(" ")[0];  // solo el primer nombre
 
   // traer los centros para el formulario
   const rc = await pedirApi("/api/centros");

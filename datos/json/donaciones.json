@@ -90,5 +90,399 @@
     "fecha_ultimo_cambio": "2026-10-25 14:37",
     "fecha_entrega": null,
     "id": 6
+  },
+  {
+    "id_donante": 10,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "arroz, aceite",
+    "cantidad": 7,
+    "articulos": [
+      {
+        "articulo": "arroz",
+        "cantidad": 5,
+        "unidad": "kg",
+        "vencimiento": "2027-01-13"
+      },
+      {
+        "articulo": "aceite",
+        "cantidad": 2,
+        "unidad": "unidades",
+        "vencimiento": "2027-01-13"
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Calle 36 # 27-15, San Alonso",
+    "latitud_recogida": 7.1205,
+    "longitud_recogida": -73.119,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      }
+    ],
+    "id": 7,
+    "demo": true
+  },
+  {
+    "id_donante": 11,
+    "id_centro": 2,
+    "categoria": "Ropa",
+    "articulo": "chaquetas",
+    "cantidad": 4,
+    "articulos": [
+      {
+        "articulo": "chaquetas",
+        "cantidad": 4,
+        "unidad": "unidades",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Carrera 33 # 45-60, Cabecera",
+    "latitud_recogida": 7.118,
+    "longitud_recogida": -73.107,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      }
+    ],
+    "id": 8,
+    "demo": true
+  },
+  {
+    "id_donante": 12,
+    "id_centro": 1,
+    "categoria": "Aseo",
+    "articulo": "jabón",
+    "cantidad": 2,
+    "articulos": [
+      {
+        "articulo": "jabón",
+        "cantidad": 2,
+        "unidad": "cajas",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Calle 5 # 8-20, Cañaveral",
+    "latitud_recogida": 7.07,
+    "longitud_recogida": -73.1,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      }
+    ],
+    "id": 9,
+    "demo": true
+  },
+  {
+    "id_donante": 13,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "lentejas",
+    "cantidad": 6,
+    "articulos": [
+      {
+        "articulo": "lentejas",
+        "cantidad": 6,
+        "unidad": "libras",
+        "vencimiento": "2027-01-13"
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Calle 14 # 22-11, San Francisco",
+    "latitud_recogida": 7.126,
+    "longitud_recogida": -73.121,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "en camino",
+    "id_conductor": 20,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      },
+      {
+        "estado": "en camino",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Un conductor aceptó la recogida"
+      }
+    ],
+    "id": 10,
+    "demo": true
+  },
+  {
+    "id_donante": 14,
+    "id_centro": 2,
+    "categoria": "Ropa",
+    "articulo": "pantalones",
+    "cantidad": 3,
+    "articulos": [
+      {
+        "articulo": "pantalones",
+        "cantidad": 3,
+        "unidad": "unidades",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Carrera 25 # 30-40, Centro",
+    "latitud_recogida": 7.069,
+    "longitud_recogida": -73.169,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "en camino",
+    "id_conductor": 21,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      },
+      {
+        "estado": "en camino",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Un conductor aceptó la recogida"
+      }
+    ],
+    "id": 11,
+    "demo": true
+  },
+  {
+    "id_donante": 15,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "fríjol",
+    "cantidad": 4,
+    "articulos": [
+      {
+        "articulo": "fríjol",
+        "cantidad": 4,
+        "unidad": "libras",
+        "vencimiento": "2027-01-13"
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Calle 52 # 31-09, Sotomayor",
+    "latitud_recogida": 7.115,
+    "longitud_recogida": -73.113,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "recibida",
+    "id_conductor": 22,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": "2026-11-14 22:38",
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      },
+      {
+        "estado": "en camino",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Un conductor aceptó la recogida"
+      },
+      {
+        "estado": "recibida",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Entregada en el centro por el conductor. Nota: Una bolsa venía rota, se recogió completa."
+      }
+    ],
+    "id": 12,
+    "demo": true,
+    "observacion_entrega": "Una bolsa venía rota, se recogió completa.",
+    "observacion_de": "conductor"
+  },
+  {
+    "id_donante": 16,
+    "id_centro": 1,
+    "categoria": "Aseo",
+    "articulo": "papel higiénico",
+    "cantidad": 3,
+    "articulos": [
+      {
+        "articulo": "papel higiénico",
+        "cantidad": 3,
+        "unidad": "paquetes",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Carrera 9 # 18-30, Comuneros",
+    "latitud_recogida": 7.131,
+    "longitud_recogida": -73.129,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "recibida",
+    "id_conductor": 23,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": "2026-11-14 22:38",
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      },
+      {
+        "estado": "en camino",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Un conductor aceptó la recogida"
+      },
+      {
+        "estado": "recibida",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Entregada en el centro por el conductor"
+      }
+    ],
+    "id": 13,
+    "demo": true
+  },
+  {
+    "id_donante": 17,
+    "id_centro": 2,
+    "categoria": "Ropa",
+    "articulo": "cobijas",
+    "cantidad": 2,
+    "articulos": [
+      {
+        "articulo": "cobijas",
+        "cantidad": 2,
+        "unidad": "unidades",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "",
+    "latitud_recogida": null,
+    "longitud_recogida": null,
+    "modalidad": "personal",
+    "cuando_llevara": "El sábado en la mañana",
+    "estado": "por llevar",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "por llevar",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada: la llevará el donante"
+      }
+    ],
+    "id": 14,
+    "demo": true
+  },
+  {
+    "id_donante": 18,
+    "id_centro": 1,
+    "categoria": "Aseo",
+    "articulo": "crema dental",
+    "cantidad": 5,
+    "articulos": [
+      {
+        "articulo": "crema dental",
+        "cantidad": 5,
+        "unidad": "unidades",
+        "vencimiento": null
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Calle 105 # 22-14, Provenza",
+    "latitud_recogida": 7.095,
+    "longitud_recogida": -73.108,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "cancelada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      },
+      {
+        "estado": "cancelada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Cancelada por el donante (Se la di a otra persona u organización)"
+      }
+    ],
+    "id": 15,
+    "demo": true,
+    "motivo_cancelacion": "Se la di a otra persona u organización"
+  },
+  {
+    "id_donante": 19,
+    "id_centro": 1,
+    "categoria": "Alimentos",
+    "articulo": "panela",
+    "cantidad": 10,
+    "articulos": [
+      {
+        "articulo": "panela",
+        "cantidad": 10,
+        "unidad": "unidades",
+        "vencimiento": "2027-01-13"
+      }
+    ],
+    "descripcion": "",
+    "direccion_recogida": "Carrera 15 # 4-21, Norte",
+    "latitud_recogida": 7.145,
+    "longitud_recogida": -73.125,
+    "modalidad": "recogida",
+    "cuando_llevara": "",
+    "estado": "publicada",
+    "id_conductor": null,
+    "fecha_publicacion": "2026-11-14 22:38",
+    "fecha_ultimo_cambio": "2026-11-14 22:38",
+    "fecha_entrega": null,
+    "historial": [
+      {
+        "estado": "publicada",
+        "fecha": "2026-11-14 22:38",
+        "texto": "Publicada"
+      }
+    ],
+    "id": 16,
+    "demo": true
   }
 ]

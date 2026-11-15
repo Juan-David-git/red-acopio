@@ -16,7 +16,7 @@ async function iniciar() {
     irAMiPanel(conductor.rol);
     return;
   }
-  document.getElementById("nombre-usuario").textContent = conductor.nombre;
+    document.getElementById("nombre-usuario").textContent = conductor.nombre.split(" ")[0];  // solo el primer nombre
   iniciarZona();
 
   cargarPorRecoger();

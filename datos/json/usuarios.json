@@ -100,5 +100,292 @@
     "sal": "b6b38fe7a9e70326",
     "rol": "donante",
     "id": 9
+  },
+  {
+    "nombre": "Marta Cecilia Duarte",
+    "correo": "marta@demo.redacopio.co",
+    "telefono": "3101234501",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "a798eb9884b815e83b2124cce4f88ff4244a7dfb80d6d1f30c6856f57dff0705",
+    "sal": "439a0fc8d7c2b7fd",
+    "rol": "donante",
+    "id": 10,
+    "direccion": "Calle 36 # 27-15, San Alonso",
+    "direccion_latitud": 7.1205,
+    "direccion_longitud": -73.119
+  },
+  {
+    "nombre": "Jorge Iván Peña",
+    "correo": "jorge@demo.redacopio.co",
+    "telefono": "3101234502",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "68eabb637bc00a4a151fa8e94709f670bd41524f3644140effcc4af0698fbdf6",
+    "sal": "078dcc55fc1c3884",
+    "rol": "donante",
+    "id": 11,
+    "direccion": "Carrera 33 # 45-60, Cabecera",
+    "direccion_latitud": 7.118,
+    "direccion_longitud": -73.107
+  },
+  {
+    "nombre": "Luisa Fernanda Ardila",
+    "correo": "luisa@demo.redacopio.co",
+    "telefono": "3101234503",
+    "ciudad": "Floridablanca",
+    "clave_hash": "0050f2a9d7b41bdae6649b6e371f0ce51d860392de2d33cf593ad5d3b9d3daf2",
+    "sal": "0a84003015fc7f1e",
+    "rol": "donante",
+    "id": 12,
+    "direccion": "Calle 5 # 8-20, Cañaveral",
+    "direccion_latitud": 7.07,
+    "direccion_longitud": -73.1
+  },
+  {
+    "nombre": "Andrés Felipe Rueda",
+    "correo": "andres@demo.redacopio.co",
+    "telefono": "3101234504",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "7a0d36618fb1023bd7aa208cc9c70a32517a6887b82c83c4297421fdb295e847",
+    "sal": "b48e35f3028fb572",
+    "rol": "donante",
+    "id": 13,
+    "direccion": "Calle 14 # 22-11, San Francisco",
+    "direccion_latitud": 7.126,
+    "direccion_longitud": -73.121
+  },
+  {
+    "nombre": "Sandra Milena Ortiz",
+    "correo": "sandra@demo.redacopio.co",
+    "telefono": "3101234505",
+    "ciudad": "Girón",
+    "clave_hash": "db1c16414ddb4242ad389cceedc26a3762db1dc1837bfe38dc617c48bccd187f",
+    "sal": "204bc6d3393b14f9",
+    "rol": "donante",
+    "id": 14,
+    "direccion": "Carrera 25 # 30-40, Centro",
+    "direccion_latitud": 7.069,
+    "direccion_longitud": -73.169
+  },
+  {
+    "nombre": "Héctor Julio Mantilla",
+    "correo": "hector@demo.redacopio.co",
+    "telefono": "3101234506",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "83ebce9857b948873f2474d34ee8dd6ff1f0926b0843d38af41badc73ba69321",
+    "sal": "6e2cf22ef0219d96",
+    "rol": "donante",
+    "id": 15,
+    "direccion": "Calle 52 # 31-09, Sotomayor",
+    "direccion_latitud": 7.115,
+    "direccion_longitud": -73.113
+  },
+  {
+    "nombre": "Paola Andrea Serrano",
+    "correo": "paola@demo.redacopio.co",
+    "telefono": "3101234507",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "0658ebb75dbdd75efa27fe4959d42144b11df32fe855a7e9d67a412c9e9316b4",
+    "sal": "0cedb9c274e7de60",
+    "rol": "donante",
+    "id": 16,
+    "direccion": "Carrera 9 # 18-30, Comuneros",
+    "direccion_latitud": 7.131,
+    "direccion_longitud": -73.129
+  },
+  {
+    "nombre": "Camilo Ernesto Vargas",
+    "correo": "camilo@demo.redacopio.co",
+    "telefono": "3101234508",
+    "ciudad": "Floridablanca",
+    "clave_hash": "2a67540a74bfe2b7af5696b68506d5d4d4e10c8d033f6f21b6fe007292326cc6",
+    "sal": "22b50a3491d4d1ae",
+    "rol": "donante",
+    "id": 17,
+    "direccion": "Calle 30 # 10-05, Lagos",
+    "direccion_latitud": 7.075,
+    "direccion_longitud": -73.095
+  },
+  {
+    "nombre": "Diana Carolina Pinzón",
+    "correo": "diana@demo.redacopio.co",
+    "telefono": "3101234509",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "e6c524be9b6d09a76e76e9968758b061e153f48d4506ace76c7781c69ab61ca7",
+    "sal": "1c6035b1833e4e22",
+    "rol": "donante",
+    "id": 18,
+    "direccion": "Calle 105 # 22-14, Provenza",
+    "direccion_latitud": 7.095,
+    "direccion_longitud": -73.108
+  },
+  {
+    "nombre": "Óscar Mauricio León",
+    "correo": "oscar@demo.redacopio.co",
+    "telefono": "3101234510",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "3d00bacb051855b70a90f313f6e632421a0a15739f1a2682370ceab2bec4c936",
+    "sal": "ff4b3bb021af5d2a",
+    "rol": "donante",
+    "id": 19,
+    "direccion": "Carrera 15 # 4-21, Norte",
+    "direccion_latitud": 7.145,
+    "direccion_longitud": -73.125
+  },
+  {
+    "nombre": "Ricardo Gómez",
+    "correo": "ricardo@demo.redacopio.co",
+    "telefono": "3201234501",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "504fae3c4a0b3e20841a21455b61346040a32216e4417cb9d2cfbe7eeb5a659e",
+    "sal": "37aada87a7a871b0",
+    "rol": "conductor",
+    "tipo_vehiculo": "moto",
+    "placa": "RGM12A",
+    "capacidad_kg": 40,
+    "zona": "Norte",
+    "dias": [
+      "lunes",
+      "miércoles",
+      "viernes"
+    ],
+    "franjas": [
+      "mañana",
+      "tarde"
+    ],
+    "disponible": true,
+    "id": 20
+  },
+  {
+    "nombre": "Natalia Suárez",
+    "correo": "natalia@demo.redacopio.co",
+    "telefono": "3201234502",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "5ae115e440e33cd1b8b559e73c1a3e4d91125b745a30383a291b62d28f09384f",
+    "sal": "28692d987e7b2942",
+    "rol": "conductor",
+    "tipo_vehiculo": "carro",
+    "placa": "NSU345",
+    "capacidad_kg": 200,
+    "zona": "Cabecera",
+    "dias": [
+      "martes",
+      "jueves",
+      "sábado"
+    ],
+    "franjas": [
+      "tarde"
+    ],
+    "disponible": true,
+    "id": 21
+  },
+  {
+    "nombre": "Fabián Torres",
+    "correo": "fabian@demo.redacopio.co",
+    "telefono": "3201234503",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "9a168f60f3d324f746ce0091dff50b82f8a681bd4737f11f75409e70e27c5a7f",
+    "sal": "e87d0d1a34fb858d",
+    "rol": "conductor",
+    "tipo_vehiculo": "camioneta",
+    "placa": "FTR678",
+    "capacidad_kg": 800,
+    "zona": "Floridablanca",
+    "dias": [
+      "lunes",
+      "martes",
+      "miércoles",
+      "jueves",
+      "viernes"
+    ],
+    "franjas": [
+      "mañana"
+    ],
+    "disponible": true,
+    "id": 22
+  },
+  {
+    "nombre": "Yolanda Rincón",
+    "correo": "yolanda@demo.redacopio.co",
+    "telefono": "3201234504",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "ef0e93c94a71bfca4f217c5a01ef9730d560c934409702461b8bb34078078b0c",
+    "sal": "a238bb36cad6d757",
+    "rol": "conductor",
+    "tipo_vehiculo": "carro",
+    "placa": "YRI901",
+    "capacidad_kg": 250,
+    "zona": "Centro",
+    "dias": [
+      "sábado",
+      "domingo"
+    ],
+    "franjas": [
+      "mañana",
+      "tarde",
+      "noche"
+    ],
+    "disponible": true,
+    "id": 23
+  },
+  {
+    "nombre": "Mauricio Silva",
+    "correo": "mauricio@demo.redacopio.co",
+    "telefono": "3201234505",
+    "ciudad": "Bucaramanga",
+    "clave_hash": "c2b47117e132e12cfbd8b70e6f66a61a00aee84e65f2bfe56ab775b1e2eee596",
+    "sal": "b6d8bab9acfdff20",
+    "rol": "conductor",
+    "tipo_vehiculo": "moto",
+    "placa": "MSI23B",
+    "capacidad_kg": 30,
+    "zona": "Girón",
+    "dias": [],
+    "franjas": [],
+    "disponible": false,
+    "id": 24
+  },
+  {
+    "nombre": "Gloria Patiño",
+    "correo": "gloria@demo.redacopio.co",
+    "telefono": "3151234501",
+    "ciudad": "Bucaramanga",
+    "rol": "gestor",
+    "clave_hash": "b4822b96b9a2e0da2f0bd81ab9f3c745d420bbc638dbbb549b3b3c9878523dd9",
+    "sal": "89eb5ddf46a27607",
+    "acepta_privacidad": true,
+    "id": 25
+  },
+  {
+    "nombre": "Hernán Quintero",
+    "correo": "hernan@demo.redacopio.co",
+    "telefono": "3151234502",
+    "ciudad": "Bucaramanga",
+    "rol": "gestor",
+    "clave_hash": "f6e8ee6f4becb9bc8e5157db1f56af32811424798ab4092fcba0d26cd8f16dd6",
+    "sal": "b1a52976750cc065",
+    "acepta_privacidad": true,
+    "id": 26
+  },
+  {
+    "nombre": "Beatriz Lozano",
+    "correo": "beatriz@demo.redacopio.co",
+    "telefono": "3151234503",
+    "ciudad": "Floridablanca",
+    "rol": "gestor",
+    "clave_hash": "b06af88bbf60ff41e0ddb4ce89d0bc9356df7c1910bd4817aedfa503f6ac078f",
+    "sal": "805a2e6d8592a74d",
+    "acepta_privacidad": true,
+    "id": 27
+  },
+  {
+    "nombre": "Álvaro Méndez",
+    "correo": "alvaro@demo.redacopio.co",
+    "telefono": "3151234504",
+    "ciudad": "Girón",
+    "rol": "gestor",
+    "clave_hash": "98c148981b59683ab7bf740e52d8d3e2140628e4884ee1f21d6c840b44884ed9",
+    "sal": "a0abb3981261aca0",
+    "acepta_privacidad": true,
+    "id": 28
   }
 ]

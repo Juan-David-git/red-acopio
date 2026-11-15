@@ -1221,3 +1221,17 @@ ol.historial small { color: var(--gris); }
   .buscar-centros { grid-template-columns: 1fr auto; align-items: center; }
 }
 #estado-cerca { margin: -6px 0 14px; }
+
+/* ---------- arreglos para celular ---------- */
+/* 1. el nombre del usuario en una sola linea (si es largo, termina en "...") */
+#nombre-usuario { white-space: nowrap; }
+
+/* 2. ningun boton se sale de su caja: si el texto no cabe, pasa a dos lineas */
+.boton { max-width: 100%; }
+
+@media (max-width: 600px) {
+  .boton { white-space: normal; text-align: center; }
+
+  /* 3. si las pestañas no caben, bajan a una segunda fila en vez de quedar cortadas */
+  .pestanas { flex-wrap: wrap; border-radius: 26px; }
+}
