@@ -19,7 +19,8 @@
         "jabón",
         "papel higiénico"
       ]
-    }
+    },
+    "id_gestor": 25
   },
   {
     "id": 2,
@@ -38,7 +39,8 @@
         "ropa de niño",
         "pantalones"
       ]
-    }
+    },
+    "id_gestor": 26
   },
   {
     "id": 3,
@@ -58,7 +60,8 @@
       "Ropa": [
         "camisas"
       ]
-    }
+    },
+    "id_gestor": 27
   },
   {
     "nombre": "Parroquia San Juan Bautista",
@@ -78,7 +81,8 @@
         "medias"
       ]
     },
-    "id": 4
+    "id": 4,
+    "id_gestor": 28
   },
   {
     "id_gestor": 3,

@@ -19,6 +19,9 @@ class RepositorioJSON:
 
     def _leer(self):
         with candado:
+            # si el archivo todavia no existe (ej: salidas.json nuevo), es una lista vacia
+            if not os.path.exists(self.ruta):
+                return []
             with open(self.ruta, "r", encoding="utf-8") as archivo:
                 return json.load(archivo)
 
@@ -74,3 +77,5 @@ class RepositorioJSON:
 centros = RepositorioJSON("centros.json")
 usuarios = RepositorioJSON("usuarios.json")
 donaciones = RepositorioJSON("donaciones.json")
+# lo que cada centro entrega a las familias (libera espacio)
+salidas = RepositorioJSON("salidas.json")

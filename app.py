@@ -1,4 +1,5 @@
 import os
+import traceback
 import json
 import webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -13,6 +14,8 @@ from logica.usuarios_servicio import (
 )
 from logica import donaciones_servicio
 from logica import centros_servicio
+from logica import estadisticas_servicio
+from logica import perfil_servicio
 
 # carpeta donde estan las paginas (html, css, js)
 CARPETA_WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presentacion", "web")
@@ -57,11 +60,16 @@ class Manejador(BaseHTTPRequestHandler):
                     if usuario["rol"] == "conductor":
                         respuesta["disponible"] = usuario.get("disponible", False)
                         respuesta["franjas"] = usuario.get("franjas", [])
+                        respuesta["dias"] = usuario.get("dias", ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"])
+                        # su punto de partida y hasta donde puede ir (para ordenar por cercania)
+                        respuesta["zona_latitud"] = usuario.get("zona_latitud")
+                        respuesta["zona_longitud"] = usuario.get("zona_longitud")
+                        respuesta["radio_km"] = usuario.get("radio_km", 5)
                     self.responder_json(200, respuesta)
 
             # lista de centros (cualquiera la puede ver)
             elif ruta == "/api/centros":
-                self.responder_json(200, repo.centros.listar())
+                self.responder_json(200, centros_servicio.listar_publico())
 
             # ----- donante -----
             elif ruta == "/api/mis-donaciones":
@@ -91,12 +99,50 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     self.responder_json(200, centros_servicio.donaciones(usuario["id"]))
 
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.salidas(usuario["id"]))
+
+            elif ruta == "/api/mi-centro/zona":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    self.responder_json(200, centros_servicio.zona(usuario["id"]))
+
+            # ----- perfil (cualquier usuario con sesion) -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    self.responder_json(200, perfil_servicio.ver(usuario["id"]))
+
+            # ----- estadisticas de cada panel -----
+            elif ruta == "/api/mis-estadisticas":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                elif usuario["rol"] == "donante":
+                    self.responder_json(200, estadisticas_servicio.del_donante(usuario["id"]))
+                elif usuario["rol"] == "conductor":
+                    self.responder_json(200, estadisticas_servicio.del_conductor(usuario["id"]))
+                else:
+                    centro = centros_servicio.centro_del_gestor(usuario["id"])
+                    self.responder_json(200, estadisticas_servicio.del_centro(centro["id"]))
+
             # si no es de la API, es un archivo (html, css, js)
             else:
                 self.servir_archivo(ruta)
 
         except ErrorNegocio as e:
-            self.responder_json(400, {"error": str(e)})
+            self.responder_json(400, self.error_json(e))
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- POST: el navegador envia datos ----------
     def do_POST(self):
@@ -113,17 +159,15 @@ class Manejador(BaseHTTPRequestHandler):
             datos = self.leer_json()
 
             # ----- registro e inicio de sesion -----
-            if ruta == "/api/registro/donante":
-                registrar_donante(datos)
-                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
-
-            elif ruta == "/api/registro/conductor":
-                registrar_conductor(datos)
-                self.responder_json(201, {"mensaje": "¡Registro exitoso! Ya puede iniciar sesión."})
-
-            elif ruta == "/api/registro/centro":
-                registrar_centro(datos)
-                self.responder_json(201, {"mensaje": "¡Centro de acopio registrado! Ya puede iniciar sesión."})
+            # CU-01: al registrarse queda con la sesion abierta y entra directo a su panel
+            if ruta in ("/api/registro/donante", "/api/registro/conductor", "/api/registro/centro"):
+                registrar = {"donante": registrar_donante, "conductor": registrar_conductor,
+                             "centro": registrar_centro}[partes[3]]
+                usuario = registrar(datos)
+                token = seguridad.crear_sesion(usuario["id"])
+                cookie = "sesion=" + token + "; Path=/; HttpOnly; SameSite=Lax"
+                self.responder_json(201, {"mensaje": "¡Registro exitoso! Bienvenido a Red Acopio.",
+                                          "nombre": usuario["nombre"], "rol": usuario["rol"]}, cookie)
 
             elif ruta == "/api/login":
                 usuario = iniciar_sesion(datos.get("correo", ""), datos.get("clave", ""))
@@ -139,14 +183,36 @@ class Manejador(BaseHTTPRequestHandler):
             elif ruta == "/api/donaciones":
                 usuario = self.exigir_rol("donante")
                 if usuario:
-                    donaciones_servicio.publicar(usuario["id"], datos)
-                    self.responder_json(201, {"mensaje": "¡Su donación fue publicada! Un conductor la recogerá pronto."})
+                    donacion = donaciones_servicio.publicar(usuario["id"], datos)
+                    if donacion["modalidad"] == "personal":
+                        mensaje = "¡Listo! El centro ya sabe que usted le llevará la donación. Cuando la entregue, ellos la confirman."
+                    else:
+                        mensaje = "¡Su donación fue publicada! Un conductor la recogerá pronto."
+                    self.responder_json(201, {"mensaje": mensaje})
+
+            # ----- perfil -----
+            elif ruta == "/api/perfil":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil = perfil_servicio.actualizar(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Sus datos quedaron guardados.", "perfil": perfil})
+
+            elif ruta == "/api/perfil/clave":
+                usuario = self.usuario_actual()
+                if usuario is None:
+                    self.responder_json(401, {"error": "Su sesión terminó. Inicie sesión de nuevo."})
+                else:
+                    perfil_servicio.cambiar_clave(usuario["id"], datos)
+                    self.responder_json(200, {"mensaje": "Su contraseña fue cambiada."})
 
             # ----- conductor: horarios (RF020) -----
             elif ruta == "/api/disponibilidad":
                 usuario = self.exigir_rol("conductor")
                 if usuario:
-                    actualizar_disponibilidad(usuario["id"], datos.get("disponible", False), datos.get("franjas", []))
+                    actualizar_disponibilidad(usuario["id"], datos.get("disponible", False),
+                                              datos.get("franjas", []), datos.get("dias"))
                     self.responder_json(200, {"mensaje": "Horarios guardados."})
 
             # ----- centro de acopio: actualizar horario, capacidad y necesidades -----
@@ -155,6 +221,12 @@ class Manejador(BaseHTTPRequestHandler):
                 if usuario:
                     centro = centros_servicio.actualizar(usuario["id"], datos)
                     self.responder_json(200, {"mensaje": "Datos del centro guardados.", "centro": centro})
+
+            elif ruta == "/api/mi-centro/salidas":
+                usuario = self.exigir_rol("gestor")
+                if usuario:
+                    centros_servicio.registrar_salida(usuario["id"], datos)
+                    self.responder_json(201, {"mensaje": "Entrega registrada. ¡Gracias por llevar la ayuda a las familias!"})
 
             # ----- acciones sobre una donacion: /api/donaciones/<id>/<accion> -----
             elif len(partes) == 5 and partes[2] == "donaciones":
@@ -168,7 +240,7 @@ class Manejador(BaseHTTPRequestHandler):
                 if accion == "cancelar":
                     usuario = self.exigir_rol("donante")
                     if usuario:
-                        donaciones_servicio.cancelar(usuario["id"], id_donacion)
+                        donaciones_servicio.cancelar(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "La donación fue cancelada."})
 
                 elif accion == "aceptar":
@@ -180,13 +252,13 @@ class Manejador(BaseHTTPRequestHandler):
                 elif accion == "completar":
                     usuario = self.exigir_rol("conductor")
                     if usuario:
-                        donaciones_servicio.marcar_entregada(usuario["id"], id_donacion)
+                        donaciones_servicio.marcar_entregada(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "Entrega registrada. ¡Gracias por ayudar!"})
 
                 elif accion == "recibir":
                     usuario = self.exigir_rol("gestor")
                     if usuario:
-                        centros_servicio.confirmar_recepcion(usuario["id"], id_donacion)
+                        centros_servicio.confirmar_recepcion(usuario["id"], id_donacion, datos)
                         self.responder_json(200, {"mensaje": "Donación recibida. ¡Quedó registrada en su centro!"})
 
                 else:
@@ -196,7 +268,14 @@ class Manejador(BaseHTTPRequestHandler):
                 self.responder_json(404, {"error": "Ruta no encontrada."})
 
         except ErrorNegocio as e:
-            self.responder_json(400, {"error": str(e)})
+            self.responder_json(400, self.error_json(e))
+        except (AttributeError, TypeError, ValueError, KeyError):
+            # llego algo con un tipo raro (ej: un numero donde iba texto)
+            self.responder_json(400, {"error": "Los datos enviados no son válidos."})
+        except Exception:
+            # cualquier otro error: no se cae la pagina, se responde y queda escrito en la terminal
+            traceback.print_exc()
+            self.responder_json(500, {"error": "Ocurrió un error inesperado. Intente de nuevo."})
 
     # ---------- ayudas ----------
     def servir_archivo(self, ruta):
@@ -221,6 +300,10 @@ class Manejador(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header("Content-Type", tipo)
+        # que el navegador pregunte siempre por la version nueva (si no, despues de
+        # cambiar un .js o .css puede seguir usando el viejo guardado en cache)
+        if extension in (".html", ".css", ".js"):
+            self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(contenido)
 
@@ -238,6 +321,15 @@ class Manejador(BaseHTTPRequestHandler):
         if not isinstance(datos, dict):
             raise ErrorNegocio("Los datos enviados no son válidos.")
         return datos
+
+    def error_json(self, e):
+        # el mensaje, y si aplica, el campo a resaltar y un enlace que ayuda
+        respuesta = {"error": str(e)}
+        if e.campo:
+            respuesta["campo"] = e.campo
+        if e.accion:
+            respuesta["accion"] = e.accion
+        return respuesta
 
     def responder_json(self, codigo, datos, cookie=None):
         # convierte el diccionario a JSON y lo envia
@@ -279,7 +371,16 @@ class Manejador(BaseHTTPRequestHandler):
 # solo arranca si se ejecuta "python app.py"
 # (si otro archivo hace "import app", por ejemplo una prueba, no se lanza el servidor)
 if __name__ == "__main__":
-    servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
-    print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
-    webbrowser.open("http://localhost:8000")
-    servidor.serve_forever()
+    # En Render (o cualquier hosting) llega la variable PORT: se escucha en todas las
+    # direcciones y no se abre navegador. En el computador queda como siempre: localhost:8000.
+    puerto = os.environ.get("PORT")
+    if puerto:
+        servidor = ThreadingHTTPServer(("0.0.0.0", int(puerto)), Manejador)
+        print("Servidor en linea, puerto " + puerto)
+        servidor.serve_forever()
+    else:
+        servidor = ThreadingHTTPServer(("localhost", 8000), Manejador)
+        print("Servidor en http://localhost:8000  (Ctrl + C para detener)")
+        print("Ojo: si cambia archivos .py, detenga el servidor y vuelva a ejecutar python app.py")
+        webbrowser.open("http://localhost:8000")
+        servidor.serve_forever()

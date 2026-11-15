@@ -86,6 +86,7 @@ formulario.addEventListener("submit", async function (evento) {
 
   if (!document.getElementById("acepta_privacidad").checked) {
     mostrarMensaje("Debe aceptar la política de privacidad.", "error");
+    resaltarCampo("acepta_privacidad");
     return;
   }
 
@@ -102,7 +103,13 @@ formulario.addEventListener("submit", async function (evento) {
   // datos extra del conductor
   if (tipo === "conductor") {
     datos.tipo_vehiculo = valor("tipo_vehiculo");
+    datos.placa = valor("placa");
+    datos.capacidad_kg = valor("capacidad_kg");
     datos.zona = valor("zona");
+    datos.dias = [];
+    document.querySelectorAll('input[name="dia"]:checked').forEach(function (c) {
+      datos.dias.push(c.value);
+    });
     datos.franjas = [];
     document.querySelectorAll('input[name="franja"]:checked').forEach(function (c) {
       datos.franjas.push(c.value);
@@ -130,19 +137,15 @@ formulario.addEventListener("submit", async function (evento) {
   }
 
   // la ruta cambia segun el tipo: /api/registro/donante, /conductor o /centro
-  const respuesta = await fetch("/api/registro/" + tipo, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos)
-  });
+  // (enviarJson muestra el error, resalta el campo y ofrece "Iniciar sesión" si el correo ya existe)
+  const boton = formulario.querySelector('button[type="submit"]');
+  boton.disabled = true;
+  const r = await enviarJson("/api/registro/" + tipo, datos);
+  boton.disabled = false;
 
-  const resultado = await respuesta.json();
-
-  if (respuesta.ok) {
-    mostrarMensaje(resultado.mensaje, "exito");
-    formulario.reset();
-    if (selectorCentro) selectorCentro.quitar();
-  } else {
-    mostrarMensaje(resultado.error, "error");
+  if (r.ok) {
+    // CU-01: queda con la sesion abierta y entra directo a su panel
+    mostrarMensaje(r.datos.mensaje, "exito");
+    setTimeout(function () { irAMiPanel(r.datos.rol); }, 900);
   }
 });

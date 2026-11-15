@@ -11,13 +11,13 @@ async function iniciar() {
   const r = await pedirApi("/api/sesion");
   if (!r.ok) return;
   if (r.datos.rol !== "gestor") {
-    window.location.href = "/login.html";
+    irAMiPanel(r.datos.rol);
     return;
   }
-  document.getElementById("nombre-usuario").textContent = r.datos.nombre;
-
+    document.getElementById("nombre-usuario").textContent = r.datos.nombre.split(" ")[0];  // solo el primer nombre
   await cargarCentro();
   cargarDonaciones();
+  return true;
 }
 
 // ---------- pestañas ----------
@@ -33,9 +33,17 @@ botones.forEach(function (boton) {
     document.getElementById(boton.dataset.seccion).classList.remove("oculto");
     ocultarMensaje();
 
-    if (boton.dataset.seccion === "seccion-centro") {
+    if (boton.dataset.seccion === "seccion-resumen") {
+      pintarEstadisticas(document.getElementById("resumen"));
+    } else if (boton.dataset.seccion === "seccion-centro") {
       llenarFormulario();
       mostrarMapaMiCentro();
+    } else if (boton.dataset.seccion === "seccion-zona") {
+      cargarZona();
+    } else if (boton.dataset.seccion === "seccion-bodega") {
+      cargarCentro();
+      cargarDonaciones();
+      cargarSalidas();
     } else {
       cargarDonaciones();
     }
@@ -53,19 +61,40 @@ async function cargarCentro() {
   pintarResumen();
 }
 
+let alertaAntes = null;   // para avisar solo cuando se enciende
+
+function pintarAlerta() {
+  const caja = document.getElementById("alerta-capacidad");
+  caja.classList.toggle("oculto", !centro.alerta_capacidad);
+  if (centro.alerta_capacidad) {
+    document.getElementById("alerta-texto").textContent = " Tiene ocupado el " + centro.porcentaje +
+      " % (" + centro.ocupado + " de " + centro.capacidad_maxima + "). Registre las entregas a las familias en «Bodega» " +
+      "o aumente la capacidad en «Mi centro». El aviso se quita cuando baje del 70 %.";
+  }
+  if (alertaAntes === false && centro.alerta_capacidad) {
+    mostrarAviso("Su centro ya pasó del 80 % de su capacidad.", "info",
+      { texto: "Ver bodega", alTocar: function () { abrirPestana("seccion-bodega"); } });
+  }
+  alertaAntes = Boolean(centro.alerta_capacidad);
+}
+
 function pintarResumen() {
+  pintarAlerta();
   document.getElementById("nombre-centro").textContent = centro.nombre;
   document.getElementById("direccion-centro").textContent =
     centro.direccion + ", " + centro.barrio + ", " + centro.ciudad + " · " + centro.horario;
 
   document.getElementById("cifra-libre").textContent = centro.libre;
+  document.getElementById("cifra-bodega").textContent = centro.en_bodega;
+  document.getElementById("texto-bodega").textContent = centro.en_bodega;
 
   // barra de ocupacion: verde normal, ambar desde 75 %, roja si esta lleno
-  const porcentaje = Math.min(100, Math.round(centro.ocupado * 100 / centro.capacidad_maxima));
+  // (ocupado = lo que hay en bodega + lo que viene en camino)
+  const porcentaje = centro.porcentaje;
   const barra = document.getElementById("ocupacion-barra");
   const relleno = document.getElementById("ocupacion-relleno");
   relleno.style.width = porcentaje + "%";
-  barra.className = "ocupacion-barra" + (porcentaje >= 100 ? " lleno" : porcentaje >= 75 ? " casi" : "");
+  barra.className = "ocupacion-barra " + nivelOcupacion(porcentaje);
   barra.setAttribute("aria-valuenow", porcentaje);
   document.getElementById("ocupacion-texto").textContent =
     centro.ocupado + " de " + centro.capacidad_maxima + " artículos (" + porcentaje + " %)";
@@ -76,14 +105,23 @@ function tarjeta(d) {
   let html = '<div class="donacion">';
   html += iconoCategoria(d.categoria);
   html += '<div class="donacion-cabeza">';
-  html += "<h3>" + d.cantidad + " × " + limpiar(d.articulo) + "</h3>";
+  html += "<h3>" + limpiar(tituloDonacion(d)) + "</h3>";
   html += etiquetaEstado(d.estado);
   html += "</div>";
   html += '<div class="donacion-cuerpo">';
+  html += detalleArticulos(d);
   if (d.descripcion) {
     html += dato("nota", limpiar(d.descripcion));
   }
-  html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  if (d.modalidad === "personal") {
+    // la trae el donante personalmente
+    html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre) + " — la trae personalmente");
+    if (d.estado === "por llevar" && d.cuando_llevara) {
+      html += dato("reloj", "Dijo que vendría: " + limpiar(d.cuando_llevara));
+    }
+  } else {
+    html += dato("usuario", "<strong>Donante:</strong> " + limpiar(d.donante_nombre));
+  }
   if (d.conductor_nombre) {
     html += dato("vehiculo", "<strong>Conductor:</strong> " + limpiar(d.conductor_nombre) +
       (d.conductor_vehiculo ? " (" + limpiar(d.conductor_vehiculo) + ")" : ""));
@@ -104,11 +142,11 @@ async function cargarDonaciones() {
   const recibidas = datos.recibidas.reverse();
 
   document.getElementById("cifra-llegar").textContent = porLlegar.length;
-  document.getElementById("cifra-recibidas").textContent = recibidas.length;
 
   // por llegar: primero las que ya vienen en camino
+  // primero lo que ya viene (en camino o lo trae el donante), despues lo que espera conductor
   porLlegar.sort(function (a, b) {
-    return (a.estado === "en camino" ? 0 : 1) - (b.estado === "en camino" ? 0 : 1);
+    return (a.estado === "publicada" ? 1 : 0) - (b.estado === "publicada" ? 1 : 0);
   });
 
   const llegar = document.getElementById("lista-llegar");
@@ -121,15 +159,26 @@ async function cargarDonaciones() {
       html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
       html += "</div>";
       html += '<div class="donacion-acciones">';
-      html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
-      if (d.conductor_telefono) {
-        const numero = String(d.conductor_telefono).replace(/\D/g, "");
-        html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+      if (d.modalidad === "personal") {
+        // no hay recorrido: el donante llega por su cuenta. Se le puede llamar.
+        if (d.donante_telefono) {
+          const numero = String(d.donante_telefono).replace(/\D/g, "");
+          html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar al donante</a>";
+        }
+      } else {
+        html += '<button class="boton secundario" aria-expanded="false" onclick="verRecorrido(this, ' + d.id + ')">' + icono("ruta") + "Ver recorrido</button>";
+        if (d.conductor_telefono) {
+          const numero = String(d.conductor_telefono).replace(/\D/g, "");
+          html += '<a class="boton secundario" href="tel:' + numero + '">' + icono("telefono") + "Llamar</a>";
+        }
       }
-      if (d.estado === "en camino") {
-        html += '<button class="boton verde" onclick="recibir(' + d.id + ')">' + icono("check") + "Confirmar recibido</button>";
+      if (d.estado === "en camino" || d.estado === "por llevar") {
+        html += '<button class="boton verde" aria-expanded="false" onclick="abrirEntrega(this)">' + icono("check") + "Confirmar recibido</button>";
       }
       html += "</div>";
+      if (d.estado === "en camino" || d.estado === "por llevar") {
+        html += formularioEntrega(d.id, "recibir", "Sí, ya llegó");
+      }
       html += '<div class="donacion-mapa oculto"></div>';
       html += "</div>";
     });
@@ -144,6 +193,7 @@ async function cargarDonaciones() {
     recibidas.forEach(function (d) {
       html += tarjeta(d);
       html += dato("check", "Recibida el " + formatearFecha(d.fecha_entrega));
+      html += datoObservacion(d);
       html += "</div></div>";
     });
     lista.innerHTML = html;
@@ -155,15 +205,77 @@ function verRecorrido(boton, id) {
   if (d) alternarRecorrido(boton, d);
 }
 
-async function recibir(id) {
-  if (!confirm("¿Confirma que esta donación ya llegó a su centro?")) {
-    return;
-  }
-  const r = await enviarJson("/api/donaciones/" + id + "/recibir");
+async function recibir(evento, id) {
+  evento.preventDefault();
+  recibidasPorMi.add(id);   // para no avisarle de su propia accion
+  const r = await enviarJson("/api/donaciones/" + id + "/recibir", leerObservacion(id));
   if (r.ok) {
     mostrarMensaje(r.datos.mensaje, "exito");
   }
+  cargarCentro();
   cargarDonaciones();
+}
+
+// ---------- BODEGA: entregas a las familias ----------
+const botonesSalida = document.querySelectorAll("#form-salida .categoria");
+
+botonesSalida.forEach(function (boton) {
+  boton.addEventListener("click", function () {
+    elegirCategoriaSalida(boton.dataset.categoria);
+  });
+});
+
+function elegirCategoriaSalida(categoria) {
+  document.getElementById("salida_categoria").value = categoria;
+  botonesSalida.forEach(function (b) {
+    const escogido = b.dataset.categoria === categoria;
+    b.classList.toggle("activa", escogido);
+    b.setAttribute("aria-checked", escogido ? "true" : "false");
+  });
+}
+
+document.getElementById("form-salida").addEventListener("submit", async function (evento) {
+  evento.preventDefault();
+  const formulario = this;
+  const datos = {
+    categoria: document.getElementById("salida_categoria").value,
+    cantidad: document.getElementById("salida_cantidad").value,
+    descripcion: document.getElementById("salida_descripcion").value
+  };
+  if (datos.categoria === "") {
+    mostrarMensaje("Escoja qué entregó: Alimentos, Ropa, Aseo o Varias.", "error");
+    return;
+  }
+  const r = await enviarJson("/api/mi-centro/salidas", datos);
+  if (r.ok) {
+    mostrarMensaje(r.datos.mensaje, "exito");
+    formulario.reset();
+    elegirCategoriaSalida("");
+    cargarCentro();
+    cargarSalidas();
+  }
+});
+
+async function cargarSalidas() {
+  const r = await pedirApi("/api/mi-centro/salidas");
+  if (!r.ok) return;
+  const caja = document.getElementById("lista-salidas");
+  if (r.datos.length === 0) {
+    caja.innerHTML = '<p class="vacio">Todavía no ha registrado entregas a las familias.</p>';
+    return;
+  }
+  let html = "";
+  r.datos.forEach(function (s) {
+    html += '<div class="donacion">';
+    html += iconoCategoria(s.categoria);
+    html += '<div class="donacion-cabeza"><h3>' + s.cantidad + " artículos</h3>" +
+      '<span class="estado recibida">' + icono("corazon") + limpiar(s.categoria) + "</span></div>";
+    html += '<div class="donacion-cuerpo">';
+    html += dato("usuario", limpiar(s.descripcion));
+    html += dato("calendario", "Entregado el " + formatearFecha(s.fecha));
+    html += "</div></div>";
+  });
+  caja.innerHTML = html;
 }
 
 // ---------- MI CENTRO ----------
@@ -223,5 +335,114 @@ function mostrarMapaMiCentro() {
   ponerMarcador(mapaMiCentro, punto, "centro", limpiar(centro.nombre));
 }
 
+// ---------- EN LA ZONA (CU-07) ----------
+let zona = [];
+
+async function cargarZona() {
+  const r = await pedirApi("/api/mi-centro/zona");
+  if (!r.ok) return;
+  zona = r.datos;
+  pintarZona();
+}
+
+function pintarZona() {
+  const caja = document.getElementById("lista-zona");
+  const texto = document.getElementById("buscar-zona").value.trim().toLowerCase();
+  const categoria = document.getElementById("categoria-zona").value;
+  const maximo = document.getElementById("distancia-zona").value;
+
+  const visibles = zona.filter(function (d) {
+    if (categoria && d.categoria !== categoria) return false;
+    if (maximo && (d.distancia_km == null || d.distancia_km > Number(maximo))) return false;
+    if (texto) {
+      const donde = (d.articulo + " " + (d.descripcion || "") + " " + (d.direccion_recogida || "")).toLowerCase();
+      if (donde.indexOf(texto) === -1) return false;
+    }
+    return true;
+  });
+
+  if (zona.length === 0) {
+    caja.innerHTML = '<p class="vacio">No hay donaciones publicadas esperando conductor en este momento.</p>';
+    return;
+  }
+  if (visibles.length === 0) {
+    caja.innerHTML = '<p class="vacio">Ninguna donación coincide con la búsqueda. Pruebe con otra distancia o categoría.</p>';
+    return;
+  }
+
+  let html = "";
+  visibles.forEach(function (d) {
+    html += '<div class="donacion">';
+    html += iconoCategoria(d.categoria);
+    html += '<div class="donacion-cabeza"><h3>' + limpiar(tituloDonacion(d)) + "</h3>";
+    html += d.para_mi_centro ? '<span class="estado recibida">' + icono("centro") + "Para su centro</span>" : etiquetaEstado(d.estado);
+    html += "</div>";
+    html += '<div class="donacion-cuerpo">';
+    html += detalleArticulos(d);
+    if (d.descripcion) html += dato("nota", limpiar(d.descripcion));
+    if (d.direccion_recogida) html += dato("pin", limpiar(d.direccion_recogida));
+    html += dato("ruta", d.distancia_km != null ? "A " + formatoKm(d.distancia_km) + " de su centro" : "Sin punto en el mapa");
+    if (!d.para_mi_centro) html += dato("centro", "Va para: " + limpiar(d.centro_nombre));
+    html += dato("calendario", "Publicada el " + formatearFecha(d.fecha_publicacion));
+    html += "</div></div>";
+  });
+  caja.innerHTML = '<p class="ayuda">' + visibles.length + (visibles.length === 1 ? " donación" : " donaciones") + "</p>" + html;
+}
+
+["buscar-zona", "categoria-zona", "distancia-zona"].forEach(function (id) {
+  document.getElementById(id).addEventListener("input", pintarZona);
+});
+
+// ---------- avisos automaticos: lo que viene para el centro ----------
+let llegadasConocidas = null;   // id -> estado de lo que viene o ya llego
+const recibidasPorMi = new Set();
+
+function abrirPestana(seccion) {
+  document.querySelector('.pestanas [data-seccion="' + seccion + '"]').click();
+}
+
+async function revisarLlegadas() {
+  const datos = await pedirEnSilencio("/api/mi-centro/donaciones");
+  if (!datos) return;
+  const todas = datos.por_llegar.concat(datos.recibidas);
+
+  let huboCambio = false;
+  if (llegadasConocidas) {
+    todas.forEach(function (d) {
+      const antes = llegadasConocidas[d.id];
+      const que = tituloDonacion(d);
+      const ver = { texto: "Ver", alTocar: function () { abrirPestana("seccion-llegar"); } };
+      if (!antes) {
+        huboCambio = true;
+        mostrarAviso("Nueva donación para su centro: " + que +
+          (d.modalidad === "personal" ? ". La trae el donante personalmente." : "."), "caja", ver);
+      } else if (antes !== d.estado) {
+        huboCambio = true;
+        if (d.estado === "en camino") {
+          mostrarAviso(que + " ya viene en camino" + (d.conductor_nombre ? " con " + d.conductor_nombre : "") + ".", "camion", ver);
+        } else if (d.estado === "recibida" && !recibidasPorMi.has(d.id)) {
+          mostrarAviso((d.conductor_nombre || "El conductor") + " entregó " + que + ". Ya está en bodega.", "check",
+            { texto: "Ver", alTocar: function () { abrirPestana("seccion-bodega"); } });
+        }
+      }
+    });
+    // alguna se cancelo o cambio: tambien hay que refrescar los numeros
+    if (Object.keys(llegadasConocidas).length !== todas.length) huboCambio = true;
+  }
+  llegadasConocidas = {};
+  todas.forEach(function (d) { llegadasConocidas[d.id] = d.estado; });
+
+  if (huboCambio) {
+    cargarCentro();   // cifras y barra de capacidad
+    if ((seccionVisible("seccion-llegar") && !hayMapaAbierto("seccion-llegar")) || seccionVisible("seccion-bodega")) {
+      cargarDonaciones();
+    }
+  }
+}
+
 activarBotonSalir();
-iniciar();
+iniciar().then(function (listo) {
+  if (!listo) return;                      // no era encargado de centro: ya se fue a su panel
+  revisarLlegadas();                       // primera foto de como estan
+  revisarCadaCierto(revisarLlegadas, 20000);
+});

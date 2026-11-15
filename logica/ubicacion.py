@@ -27,3 +27,11 @@ def leer_punto(latitud, longitud, obligatorio, falta="Marque el punto en el mapa
 
     # 6 decimales = unos 10 cm, mas que suficiente
     return round(latitud, 6), round(longitud, 6)
+
+
+def distancia_km(lat1, lon1, lat2, lon2):
+    # distancia en linea recta entre dos puntos (formula de haversine)
+    from math import radians, sin, cos, asin, sqrt
+    lat1, lon1, lat2, lon2 = map(radians, (lat1, lon1, lat2, lon2))
+    a = sin((lat2 - lat1) / 2) ** 2 + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2
+    return 6371 * 2 * asin(sqrt(a))

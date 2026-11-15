@@ -6,6 +6,7 @@ from datos import repositorio_json as repo
 from logica.errores import ErrorNegocio
 from logica.usuarios_servicio import CATEGORIAS
 from logica import donaciones_servicio
+from logica.estados import ahora
 
 
 def centro_del_gestor(id_gestor):
@@ -16,13 +17,94 @@ def centro_del_gestor(id_gestor):
     return encontrados[0]
 
 
-def resumen(id_gestor):
-    # datos del centro + cuanto tiene ocupado, para mostrar en el panel
-    centro = centro_del_gestor(id_gestor)
-    ocupado = donaciones_servicio.ocupacion_del_centro(centro["id"])
-    centro["ocupado"] = ocupado
-    centro["libre"] = max(0, centro["capacidad_maxima"] - ocupado)
+def con_ocupacion(centro):
+    # le agrega al centro sus numeros de inventario y que tan lleno esta
+    inv = donaciones_servicio.inventario_del_centro(centro["id"])
+    centro.update(inv)
+    centro["libre"] = max(0, centro["capacidad_maxima"] - inv["ocupado"])
+    centro["porcentaje"] = min(100, round(inv["ocupado"] * 100 / centro["capacidad_maxima"])) if centro["capacidad_maxima"] else 100
+    centro["alerta_capacidad"] = _revisar_alerta(centro)
     return centro
+
+
+ALERTA_SE_ENCIENDE = 80   # CU-13: a partir de 80 % se avisa al encargado
+ALERTA_SE_APAGA = 70      # y el aviso se quita cuando baja de 70 % (asi no prende y apaga a cada rato)
+
+
+def _revisar_alerta(centro):
+    encendida = centro.get("alerta_capacidad", False)
+    nueva = encendida
+    if not encendida and centro["porcentaje"] >= ALERTA_SE_ENCIENDE:
+        nueva = True
+    elif encendida and centro["porcentaje"] < ALERTA_SE_APAGA:
+        nueva = False
+    if nueva != encendida:
+        # se guarda solo la marca (se lee de nuevo para no guardar los numeros del inventario)
+        with repo.candado:
+            guardado = repo.centros.buscar_por_id(centro["id"])
+            if guardado is not None:
+                guardado["alerta_capacidad"] = nueva
+                guardado["fecha_alerta"] = ahora() if nueva else None
+                repo.centros.actualizar(guardado)
+    return nueva
+
+
+def resumen(id_gestor):
+    # datos del centro + inventario, para mostrar en el panel
+    return con_ocupacion(centro_del_gestor(id_gestor))
+
+
+def listar_publico():
+    # todos los centros con su ocupacion: cualquiera los puede ver
+    lista = []
+    for c in repo.centros.listar():
+        c = con_ocupacion(c)
+        c.pop("id_gestor", None)   # no hace falta mostrar quien es el encargado
+        c.pop("fecha_alerta", None)
+        lista.append(c)
+    return lista
+
+
+# ---------- entregas a las familias (liberan espacio) ----------
+
+def registrar_salida(id_gestor, datos):
+    centro = centro_del_gestor(id_gestor)
+
+    try:
+        cantidad = int(datos.get("cantidad", 0))
+    except (TypeError, ValueError):
+        raise ErrorNegocio("La cantidad debe ser un número.")
+    if cantidad <= 0:
+        raise ErrorNegocio("La cantidad debe ser mayor que cero.")
+
+    categoria = datos.get("categoria", "")
+    if categoria not in CATEGORIAS and categoria != "Varias":
+        raise ErrorNegocio("Seleccione qué entregó: Alimentos, Ropa, Aseo o Varias.")
+
+    # no puede entregar mas de lo que tiene guardado
+    en_bodega = donaciones_servicio.inventario_del_centro(centro["id"])["en_bodega"]
+    if cantidad > en_bodega:
+        raise ErrorNegocio("Solo tiene " + str(en_bodega) + " artículos en bodega.")
+
+    descripcion = str(datos.get("descripcion", "")).strip()
+    if descripcion == "":
+        raise ErrorNegocio("Cuente brevemente a quién se entregó (ej: 12 mercados para familias del barrio).")
+
+    salida = {
+        "id_centro": centro["id"],
+        "categoria": categoria,
+        "cantidad": cantidad,
+        "descripcion": descripcion,
+        "fecha": ahora()
+    }
+    return repo.salidas.agregar(salida)
+
+
+def salidas(id_gestor):
+    centro = centro_del_gestor(id_gestor)
+    lista = repo.salidas.buscar_por("id_centro", centro["id"])
+    lista.reverse()   # las mas nuevas primero
+    return lista
 
 
 def donaciones(id_gestor):
@@ -30,8 +112,13 @@ def donaciones(id_gestor):
     return donaciones_servicio.donaciones_del_centro(centro["id"])
 
 
-def confirmar_recepcion(id_gestor, id_donacion):
-    return donaciones_servicio.confirmar_recepcion(id_gestor, id_donacion)
+def confirmar_recepcion(id_gestor, id_donacion, datos=None):
+    return donaciones_servicio.confirmar_recepcion(id_gestor, id_donacion, datos)
+
+
+def zona(id_gestor):
+    # CU-07: lo que se esta publicando cerca (aunque vaya para otro centro)
+    return donaciones_servicio.publicadas_de_la_zona(centro_del_gestor(id_gestor))
 
 
 def actualizar(id_gestor, datos):
